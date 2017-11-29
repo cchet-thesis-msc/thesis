@@ -1,0 +1,15 @@
+\section{Statement of the problem}
+Large enterprises work with several independent applications and systems which have the need to interexchange data. The data is represented in several formats and versions, which increases the complexity of the communication between the applications and systems. Another challenges are the configuration management and the maintenance of the integrations of the applications and systems to each other, which affects the whole development life cycle and release management.
+
+The concepts of DevOps, PaaS, IaaS and microservice architecture differ to the classic development life cycle, release management and a server infrastructure where DevOps brings development and IT operations together and the classic server infrastructure will be replaced by platform as a service (PaaS) or infrastructure as a service (IaaS) or more likely both. 
+
+An enterprise service bus (ESB) is an enterprise pattern which in a large enterprise is often used to connect applications and systems together. There are several frameworks out there such as JBoss Fuse \footnote{\url{https://developers.redhat.com/products/fuse/overview/}}, which is based on a jboss application server, which helps to design implement and run an ESB. Openshift is a open source cloud system where Gepardec thinks could be used to realize an ESB or at least several aspect of it. The idea is to split a monolithic ESB application into microservices and host them in an openshift cloud, where openshift provides features for monitoring, deploying, scaling and securing microservices.
+
+The following questions shall be answered in the master thesis:
+\begin{enumerate}
+	\item How can components, internal and external microservices be integrated in an openshift environment with as little configuration as possible ?
+	\item How can different versions and stages of microservices be managed in an openshift environment ?
+	\item How to secure microservices hosted in an openshift environment ?
+\end{enumerate}
+Along with using an cloud environment such as openshift changes will have to be made in the development life cycle, release management and interaction between the departments and service providers, because the classic approaches will not apply anymore when microservices are hosted in an cloud environment such as openshift.
+
