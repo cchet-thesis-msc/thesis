@@ -1,3 +1,12 @@
 \section{State of the art}
 \label{sec:state-of-the-art}
+In my opinion today there are two established architectures for software. On the one hand there is the monolithic architecture, where the whole software is managed and organized in a single source repository, with one single complex build and deployment, and on the other hand there is the very popular micro service architecture, where the software components are organized, build, test and deployed independently from each other and therefore can be managed better.
+
+The upcoming of cloud solutions such as Openshift have become very popular these days as they simplify life cycle of an infrastructure the services run on, because cloud solutions such as Openshift abstract us from the actual infrastructure, what is a main factor when using Platform as a Service (PaaS) solutions. Features such as load balancing, triggered deployments, isolated application processes, integrated security and templates allow developers to define an infrastructure by one or more templates which when instantiated represent our infrastrucutre hosted in Openshift.
+
+The good integration of Continuous Integration/Deployment via Jenkins build server in Openshift allows to use Openshift as the platform to build, test and host services, where either a Jenkins Pipeline can create, trigger and test an Openshift build and/or deployment, or Openshift gets triggered by an hook and starts an build and/or deployment itself.
+
+This redefines the infrastructure developers are used to build, test and host their services on. There is not only an application server anymore, there is also build and deploy mechanisms, a load balancer, integrated security and monitoring. In a common development, release and application life cycle, there is the build and deploy separated from the service load balancing, which is separated from the monitoring. There is a very good integration of several aspects of an development, release and application life cycle in Openshift, where the whole build, deploy and how to host the services in the infrastructure can be defined via templates and is therefore reproducible.
+
+Openshift should allow the integration of an ESB application, where Openshift takes part of several aspects of the development, release and application life cycle and the ESB application will have to consider the micro service architecture approach in its software architecture to be able to be well integrated in Openshift.
 
