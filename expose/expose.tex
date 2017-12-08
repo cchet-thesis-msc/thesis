@@ -123,6 +123,8 @@
     urlcolor=cyan           % color of external links
 }
 
+\newlist{numbered}{enumerate}{10}
+\setlist[numbered]{label*=\arabic*.}
 
 \begin{document}
 %%%%%%%%%%%%%%%%%%%%% Startseite %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -146,12 +148,12 @@
 \pagenumbering{arabic} % arabic numbers for the main part
 
 % Here the chapters are included
-\include{chapter/statement_of_the_problem}
-\include{chapter/state_of_the_art}  
-\include{chapter/deduction}  
-\include{chapter/prototype}  
-\include{chapter/empiric}    
-\include{chapter/induction}  
+\input{chapter/statement_of_the_problem}
+\input{chapter/state_of_the_art}  
+\input{chapter/deduction}  
+\input{chapter/prototype}  
+\input{chapter/empiric}    
+\input{chapter/induction}  
 % choose your type of citation here
 %\bibliographystyle{plainnat} % author and year
 %\bibliographystyle{amsalpha} % author and year short
