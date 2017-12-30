@@ -7,7 +7,6 @@
 \togglefalse{german} % English
 %\toggletrue{german} % German
 % % % % % \LANGUAGE % % % %
-
 \iftoggle{german}{
 \usepackage[ngerman]{babel} % Deutsche Sprachanpassungen
 \usepackage[T1]{fontenc}    % Silbentrennung bei Sonderzeichen
@@ -156,16 +155,17 @@
 \input{chapter/induction}  
 % choose your type of citation here
 %\bibliographystyle{plainnat} % author and year
+%\bibliography{references}
 %\bibliographystyle{amsalpha} % author and year short
 %\bibliographystyle{alphaabbr} % author short and year
-\bibliographystyle{alpha} % author and year
+%\bibliographystyle{alpha} % author and year
 %\bibliographystyle{plain} % only numbers
 %\bibliographystyle{unibonn_ay} % a special file used for the uni bonn
 
 % Start of the appendix
 \appendix 
 % The appendix is a chapter
-\include{chapter/appendix}
+\input{chapter/appendix}
 
 
 
