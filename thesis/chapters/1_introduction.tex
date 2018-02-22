@@ -1,0 +1,27 @@
+\chapter{Introduction}
+\label{cha:intro}
+
+\section{Motivation}
+\label{sec:intro-motivation}
+Large enterprises work with several independent applications, where each application covers an aspect of a business of an enterprise. In general, these applications are from different vendors, implemented in different programming languages and with their own life cycle management. To provide a business value to the enterprise, these applications are connected via a network and part of a business workflow. The applications have to interexchange data, which is commonly represented in different data formats and versions. This leads to an highly heterogeneous network of applications, which is very hard to maintain.
+
+The major challenge of an IT department is the integration of independent applications into the enterprise application environment. The concept of Enterprise Application Integration (EAI) provides patterns [\cite{EIP}], which help to define a process for the integration of applications into a heterogeneous enterprise application environment. One of these patterns is the Enterprise Service Bus (ESB), which is widely used in the industry.
+
+Often the term ESB application is used to refer to an ESB, which connects multiple applications. But an ESB is a software architectural model, rather than an application. The term could have been established by the usage of middleware such as JBoss Fuse [\cite{Fuse2018}], which helps to integrate applications into an ESB. JBoss Fuse is based on the JBoss Enterprise Application Platform (JBoss EAP), where the applications are integrated in a existing runtime environment. 
+
+With the upcoming of cloud solutions such as Platform as a Service (PaaS) [\cite[p. 2-3]{PaaS2015}] it is now possible to move the platform from a dedicated environment to a cloud environment, where the cloud provider will take over responsibility for maintenance and security of the platform. The concept of Integration Platform as a Service (IPaaS) [\cite[p. 3]{iPaaSP12015}] is on top of PaaS and enhances a common PaaS solution with the Integration features needed by EAI.
+   
+Thus, enterprises can now reduce the effort in implementing an ESB, integrating applications into the ESB and reducing the costs of of an ESB by using a consumption based pricing model.
+
+\newpage
+\section{Objectives}
+\label{sec:intro-objectives}
+This thesis aims to implement an ESB on Openshift PaaS [\cite{Openshift2018}]. Commonly an ESB is implemented with the help of middleware such as JBoss Fuse, which is based on the JBoss EAP. The concepts of PaaS and IPaaS in combination with an ESB are in general new to the industry. In general the industry hosts their ESBs in their own data centers, due to the lack of trust for cloud solutions. 
+
+A main focus of this thesis is how applications internal and external can be integrated and managed in the PaaS solution Openshift. The different aspects of applications integrated into an ESB such as security, staging and versioning of will also be discussed in this thesis. The security is commonly managed by a middleware, which is in general hosted on a dedicated data center owned by the enterprise. With the usage of PaaS such as Openshift the responsibility of the security mostly shifts to the cloud provider.
+
+// TODO: Futher writing
+ 
+
+
+
