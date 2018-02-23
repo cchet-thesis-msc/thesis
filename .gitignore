@@ -43,3 +43,5 @@ Thumbs.db
 *.bcf
 *.toc
 *.run.xml
+*.lof
+*.lol
