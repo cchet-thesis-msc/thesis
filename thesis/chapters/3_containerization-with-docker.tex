@@ -1,57 +1,68 @@
 \chapter{Containerization with Docker}
 \label{cha:containerization-docker}
-Docker \cite{Docker2018} is a tool for creating, provisioning and interacting with Linux Containers (LXC). LXC are a lightweight version of virtualization which does not have the resource impact of a full virtualization such as OS virtualization. The differences of LXC an hypervisor based virtualization a re covered in section \ref{sec:docker-virtualization-vs-containerization}. Docker has become very popular over the past years, due to the fact, that it made it possible to easily work with LXC. Docker relies strongly on the principles of IaC which has been discussed in chapter \ref{cha:iac}. When using Docker, Linux containers are often referred as Docker containers.
+Docker is a tool for creating, provisioning and interacting with Linux Containers (LXC) \cite{Docker2018}. LXC are a lightweight version of virtualization, which does not have the resource impact of a full virtualization such as Operating System (OS) virtualization. The differences of LXC and a virtual machine are covered in Section \ref{sec:docker-virtualization-vs-containerization}. Docker has become very popular over the past years, due to the fact, that it made it possible to easily work with LXC. Docker relies strongly on the principles of IaC which has been discussed in Chapter \ref{cha:iac}. When using Docker, Linux Containers are often referred to as Docker Containers. \\
 
-Containerization is a key factor in cloud based development, because applications normally are packaged in images and run as containers on the cloud platform. Containerization provides features for a fast, effortless and consistent way of running applications in the cloud, which are discussed in section \ref{sec:docker-need-for-containerization}.
+Containerization is a key factor when hosting applications in the cloud, because the applications are normally packaged in images and run as containers on the cloud platform. Containerization provides features for a fast, effortless and consistent way of running applications in the cloud, which is discussed in the following Section \ref{sec:docker-need-for-containerization}.
 
 \section{The need for Containerization}
 \label{sec:docker-need-for-containerization}
-Containerization is a key factor for cloud platforms such as PaaS, where each application runs in its own isolated environment, called a container. A container is an instance of an image, which represents the initial state of an application. A virtual machine represents a full blown OS, where the OS provides a kernel, which is emulated on the host OS by the hypervisor. A hypervisor is a software which can create, run and manage virtual machines. A container uses the kernel provided by the host OS and therefore does not perform any emulation. A container does not represent a full blown OS, but still provides features such a networking, storage and the OS file system.  
+Containerization is a key factor for cloud platforms such as PaaS, where each application runs in its own isolated environment, called a container. A container is an instance of an image, which represents the initial state of an application. A virtual machine represents a full blown OS, where the OS provides a kernel, which is emulated on the host OS by the hypervisor. A hypervisor is a software which can create, run and manage virtual machines. A container uses the kernel provided by the host OS and therefore there is no need for an emulation. A container does not represent a full blown OS, but still provides features normally provided by an OS such a networking and storage \cite{DockerVirtScheepers2014}. \\ 
 
-Containers are faster to create, deploy and easier to manage than virtual machines. Nevertheless, cloud platforms use virtualization for managing their infrastructure, where the containers run on the provisioned virtual machines. The usage of containers compared to the usage of virtual servers can reduce costs for hosting applications. Enterprises can profit from hosting their applications of containers in several ways. Applications hosted in containers need lees resources than applications hosted in virtual servers, because there is no virtualized OS. The creation, deployment and startup of containers are faster, because only the isolated process needs to be started and not a full blown OS. Docker is well supported by Integrated Development Environments (IDEs), which provide support for creating Docker image definitions (Dockerfiles) and provisioning of Docker Containers on a local or remote environment.
+Containers are faster to create, to deploy and easier to manage compared to virtual machines. Nevertheless, cloud platforms use virtualization for managing their infrastructure, where the containers run on the provisioned virtual machines. The usage of containers compared to the usage of virtual machines can reduce costs for hosting applications. Enterprises can profit from hosting their applications of containers in several ways. Applications hosted in containers need lees resources than applications hosted in virtual machines, because there is no virtualized OS and no need for kernel emulation. The creation, deployment and startup of containers are faster, because only the isolated process needs to be started and not a full blown OS. Docker is well supported by Integrated Development Environments (IDEs), which provide support for creating Docker Image definitions (Dockerfiles) and provisioning of Docker Containers on a local or remote environment \cite{DockerFile2018}. \\
 
-When enterprises have applied IaC to their infrastructure life cycle, then the next logical step is to integrate their applications into IaC as well. Applications hosted in containers profit from the IaC principles immutability, reproducibility, repeatability and consistency. Therefore, Docker strongly relies on IaC and provides tooling for automating creation and deployment of docker containers, which is used by PaaS platforms such as Openshift. With Docker, developers define the hosting environment for their applications now and not system administrators anymore. Nevertheless, developers can profit from the deep Linux knowledge of system administrators, to define the Docker images efficiently, to keep them small and secure. 
+When enterprises have applied IaC to their infrastructure, then the next logical step is to integrate their applications into IaC as well. Applications hosted in containers profit from the IaC principles immutability, reproducibility, repeatability and consistency. Therefore, Docker strongly relies on IaC and provides tooling for automating creation and provisioning of Docker Containers, which is used by PaaS platforms such as Openshift. With Docker, developers define the hosting environment for their applications and not system administrators anymore. Nevertheless, developers can profit from the deep Linux knowledge of system administrators, to define the Docker Images efficiently, to keep them small and secure. The following Section \ref{sec:docker} will give an overview of the Docker technology, its architecture and artifacts.  
 
 \section{Docker}
 \label{sec:docker}
-This section covers Docker, which is the most popular tool to work with LXC. Docker is open source but also provides an enterprise support if needed. The core part of the Docker technology is the Docker Engine which is covered in section \ref{sec:docker-engine}. the Docker Engine is the part of the Docker technology that actually runs the containers. The Docker Images are managed in a so called Docker registry \cite{DockerRegistry2018}, which is a repository for Docker images. The most popular Docker registry is Docker Hub \cite{DockerRegistry2018}, which is a free service, where anyone can provides Docker images.
+This section covers Docker, which is the most popular tool to work with LXC. Docker is open source but also provides an enterprise support. The core part of the Docker technology is the Docker Engine, which is discussed in Section \ref{sec:docker-engine}. The Docker Engine is the part of the Docker technology that actually runs the containers. The Docker Images are managed in a so called Docker Registry, which is a repository for Docker Images. The most popular Docker Registry is Docker Hub, which is a free service, where anyone can provides Docker Images \cite{DockerRegistry2018}.
 
 \subsection{Docker Engine}
 \label{sec:docker-engine}
-Figure \ref{fig:docker-engine} illustrates the Docker Engine hosted on a Linux OS. The Docker Engine is build by layers, where each layer communicates with the layer beneath and the Docker Engine represent the core of the Docker architecture. 
+Figure \ref{fig:docker-engine} illustrates the Docker Engine architecture hosted on a Linux OS. The Docker Engine is build by layers, where each layer communicates with the layer beneath.
 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[scale=0.8]{images/docker-engine.pdf}
-	\caption{Docker Engine Architecture}
+	\caption{Docker Engine architecture}
 	\label{fig:docker-engine}
 \end{figure} 
 
-\mysubsubsection{Docker Damon and REST-API}
-\label{sec:docker-daemon}
-The docker daemon represents the background process on a Linux OS, which creates, runs and manages the Docker Containers on the Docker host. A connection to the Docker daemon can be established via a Unix socket or a network interface, depending on the configuration of the Docker daemon. If the Docker daemon is exposed via a network interface, then it is recommended to secure the connection with client certificate authentication.
+The Docker Engine was initially designed for LXC exclusively but has been ported to Windows. Docker Images and Containers created for Windows OS are not supported on a Linux OS and visa versa. The Docker Images and Containers for a Windows OS differ from those for a Linux OS, but the principles of Docker Images and Docker Containers are the same.
 
-\mysubsubsection{Docker Command Line interface (CLI)}
-The Docker Engine provides a CLI for interacting with the Docker daemon via a Linux shell. The Docker CLI itself communicates with the Docker daemon via the exposed REST-API. This is the most common way to interact with a Docker daemon. The Docker CLI provides commands for creating Docker Images and Containers and for provisioning the Docker Containers on the Docker Host.
+\mysubsubsection{Docker Damon}
+\label{sec:docker-daemon}
+The Docker Daemon represents the background process, which creates, runs and manages the Docker Containers on the Docker Host, similar to a virtual machine hypervisor. The Docker Daemon strongly depends on the kernel of the host OS, therefore incompatibilities could cause the Docker Daemon to fail functioning. The communication with the Docker Daemon is performed via a REST-API, because the Docker Engine is designed as a server client architecture. \\
+
+\mysubsubsection{REST-API}
+\label{sec:docker-rest-api}
+The REST-API can be exposed via a Unix socket or a network interface, depending on the configuration of the Docker Daemon. If the REST-API is exposed via a network interface, then it is recommended to secure the connection with client certificate authentication. If the Docker Engine and the Docker Client are located on the same host, then commonly the REST-API is exposed via a Unix socket and does not need any special security. \\
+
+\mysubsubsection{Docker Command Line interface}
+\label{sec:docker-cli}
+The Docker Engine provides a Docker Command Line Interface (CLI) for interacting with the Docker Daemon via a Linux shell. The Docker CLI itself communicates with the Docker Daemon via the exposed REST-API. This is the most common way to interact with a Docker Daemon. The Docker CLI provides commands for creating Docker Images and Containers and for provisioning the Docker Containers on the Docker Host. \\
 
 \mysubsubsection{Docker Images}
 \label{sec:docker-images}
-Docker images are defined via Dockerfiles, which contains instructions how to build the Docker image. A Docker image consists of layers, where each layer represents a state of the file system, produced by a Dockerfile instruction. Each layer is immutable and and any change on the file system produces a new layer. Docker Images are hierarchical and can inherit from another image, which is then called base image. Docker images support only single inheritance and the base image is defined via the FROM instruction as the first instruction in the Dockerfile. Docker image names have the structure \mentionedtext{[namespace]/[name]:[version]} e.g. \mentionedtext{library/openjdk:8-alpine}.
+Docker Images are defined via Dockerfiles, which contain instructions how to build the Docker Image. A Docker Image consists of layers, where each layer represents a state of the file system, produced by a Dockerfile instruction. Each layer is immutable and any change on the file system produces a new layer. Docker Images are hierarchical and can inherit from another Docker Image, which is then called base image. Docker Images support only single inheritance and the base image is defined via the \mentionedtext{FROM} instruction as the first instruction in the Dockerfile. Docker Image names have the structure \mentionedtext{[namespace]/[name]:[version]} e.g. \mentionedtext{library/openjdk:8-alpine}. \\
 
 \mysubsubsection{Docker Containers}
 \label{sec:docker-containers}
-A Docker container is an instance of a Docker image, where a new layer is appended, which contains all changes made on the file system by the running process within the Docker container. When the container is deleted, then the appended layer gets deleted as well and all made changes on the file system are lost. A Docker container keeps running as long as the contained foreground process is running. Without a foreground process the Docker container stops immediately after it was started. The process running in the container is isolated from other processes, as well is the file system, the process has access to.
+A Docker Container is an instance of a Docker Image, where a new layer is appended, which contains all changes made on the file system by the running process within the Docker Container. When the Docker Container is deleted, then the appended layer gets deleted as well and all made changes on the file system are lost. A Docker Container keeps running as long as the contained foreground process is running. Without a foreground process the Docker Container stops immediately after it was started. The process running in the Docker Container is isolated from other processes, as well is the file system, the process has access to. \\
 
 \subsection{Docker Architecture}
 \label{sec:docker-architecture}
-The Docker architecture is a client server architecture, therefore the communication to the Docker daemon is done via the REST-API. 
+The Figure \vref{fig:docker-architecture} illustrates the Docker architecture, which is a client server architecture. The design as a client server architecture is the reason why the communication to the Docker Daemon is performed via the provided REST-API. The Docker Client communicates with the Docker Daemon via the Docker CLI, where the Docker Client can be located on a remote host or on the Docker Host. The Docker Host hosts the Docker Engine, which exposes the REST-API the Docker Client connects to. The Docker Engine managed the Docker Images and Containers located on the Docker Host. The Docker Engine can pull Docker Images from a remote Docker Registry, if a registry has been registered.
 
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[scale=0.7]{images/docker-architecture.pdf}
+	\includegraphics[scale=0.9]{images/docker-architecture.pdf}
 	\caption{Docker Architecture}
-	\label{fig:docker-enginarchitecture}
+	\label{fig:docker-architecture}
 \end{figure} 
+
+\subsection{Docker Machine}
+\label{sec:docker-machine}
+Docker Machine is a tool for managing local or remote Docker Hosts \cite{DockerMachine2018}. With Docker Machine an administrator can manage multiple Docker Hosts from a main server, without the need to connect to the Docker Host via secure shell (SSH). The Docker Machine CLI provides all commands necessary for managing Docker Hosts. 
 
 \section{Virtualization vs. Containerization}
 \label{sec:docker-virtualization-vs-containerization}
