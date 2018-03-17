@@ -18,6 +18,7 @@
 \usepackage{svg}
 \usepackage{minted}
 \usepackage{listings}
+\usepackage{varioref}
 
 % -----------------------------------------------------
 \newenvironment{code}{\captionsetup{type=listing}}{}
@@ -40,6 +41,7 @@
 \graphicspath{{images/}}    % location of images and graphics
 \logofile{logo}				% logo file = images/logo.pdf (use \logofile{} for no logo)
 \bibliography{references.bib}  	% name of bibliography file (references.bib)
+\setlength{\parindent}{0pt}
 
 %%%----------------------------------------------------------
 % Title page entries
@@ -99,9 +101,7 @@
 %\include{back/appendix_d}	% source text of this document
 
 %%%----------------------------------------------------------
-\MakeBibliography                        				% references
-\listoffigures                                          % all figures
-\listoflistings                                         % all listings
+\MakeBibliography                     				% references
 %%%----------------------------------------------------------
 %%% special page for checking print size --------------------
 %\include{back/printbox}

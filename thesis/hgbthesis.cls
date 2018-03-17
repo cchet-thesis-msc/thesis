@@ -75,8 +75,8 @@
 
 %% Paper Options and Style File -----------------------------------------------
 
-\LoadClass[a4paper,11pt,oneside]{book}
-\RequirePackage[top=36mm,bottom=40mm,left=32mm,right=32mm]{geometry} %showframe
+\LoadClass[11pt,a4paper,oneside]{book}
+\RequirePackage[top=36mm,bottom=40mm,left=35mm,right=35mm]{geometry} %showframe
  
 \RequirePackage{hgb}	% load associated style file hgb.sty
 

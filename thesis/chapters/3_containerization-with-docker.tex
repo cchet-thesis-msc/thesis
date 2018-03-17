@@ -1,6 +1,6 @@
 \chapter{Containerization with Docker}
 \label{cha:containerization-docker}
-Docker [\cite{Docker2018}] is a tool for creating, provisioning and interacting with Linux Containers (LXC). LXC are a lightweight version of virtualization which does not have the resource impact of a full virtualization such as OS virtualization. The differences of LXC an hypervisor based virtualization a re covered in section \ref{sec:docker-virtualization-vs-containerization}. Docker has become very popular over the past years, due to the fact, that it made it possible to easily work with LXC. Docker relies strongly on the principles of IaC which has been discussed in chapter \ref{cha:iac}. When using Docker, Linux containers are often referred as Docker containers.
+Docker \cite{Docker2018} is a tool for creating, provisioning and interacting with Linux Containers (LXC). LXC are a lightweight version of virtualization which does not have the resource impact of a full virtualization such as OS virtualization. The differences of LXC an hypervisor based virtualization a re covered in section \ref{sec:docker-virtualization-vs-containerization}. Docker has become very popular over the past years, due to the fact, that it made it possible to easily work with LXC. Docker relies strongly on the principles of IaC which has been discussed in chapter \ref{cha:iac}. When using Docker, Linux containers are often referred as Docker containers.
 
 Containerization is a key factor in cloud based development, because applications normally are packaged in images and run as containers on the cloud platform. Containerization provides features for a fast, effortless and consistent way of running applications in the cloud, which are discussed in section \ref{sec:docker-need-for-containerization}.
 
@@ -14,7 +14,7 @@ When enterprises have applied IaC to their infrastructure life cycle, then the n
 
 \section{Docker}
 \label{sec:docker}
-This section covers Docker, which is the most popular tool to work with LXC. Docker is open source but also provides an enterprise support if needed. The core part of the Docker technology is the Docker Engine which is covered in section \ref{sec:docker-engine}. the Docker Engine is the part of the Docker technology that actually runs the containers. The Docker Images are managed in a so called Docker registry [\cite{DockerRegistry2018}], which is a repository for Docker images. The most popular Docker registry is Docker Hub [\cite{DockerRegistry2018}], which is a free service, where anyone can provides Docker images.
+This section covers Docker, which is the most popular tool to work with LXC. Docker is open source but also provides an enterprise support if needed. The core part of the Docker technology is the Docker Engine which is covered in section \ref{sec:docker-engine}. the Docker Engine is the part of the Docker technology that actually runs the containers. The Docker Images are managed in a so called Docker registry \cite{DockerRegistry2018}, which is a repository for Docker images. The most popular Docker registry is Docker Hub \cite{DockerRegistry2018}, which is a free service, where anyone can provides Docker images.
 
 \subsection{Docker Engine}
 \label{sec:docker-engine}
