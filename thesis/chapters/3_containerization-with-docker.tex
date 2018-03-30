@@ -92,12 +92,14 @@ The upcoming of LXC has eliminated the shortcoming to not be able to isolate app
 	\label{fig:docker-container-architecture}
 \end{figure} 
 
-The two main technologies underlying LXC are \mentionedtext{CGroups} and \mentionedtext{Namespaces}. These two kernel technologies provide the features needed for application isolation and prevention of process starvation.
+The two most important kernel features underlying LXC are \mentionedtext{Cgroups} and \mentionedtext{Namespaces}. These two kernel features provide the resource control and isolation needed for application isolation and prevention of process starvation.
 
-\mysubsubsection{CGroups}
-CGroups stands for control groups and CGroups provide the ability to aggregate processes, their child processes and threads within theses processes to groups managed in a tree structure. Each group gets a portion of the global resources such as CPU time, memory, I/O and network assigned, where its guaranteed that a group and its managed processes cannot consume more resources as the group has been assigned to. Each application hosted in a container is assigned to a group, where an application cannot steal resources from another application anymore, because the resource assignments of an group managed by CGroups prevents this from happening \cite{KernelCGroupsV12018, KernelCGroupV22015, IntelLXCHyperVisor2014}. \\
+\mysubsubsection{Cgroups}
+Cgroups stands for control groups and Cgroups provide the ability to aggregate processes, their child processes and threads within theses processes to groups managed in a tree structure. Each group gets a portion of the global resources such as CPU time, memory, I/O and network assigned, where its guaranteed that a group and its managed processes cannot consume more resources as the group has been assigned to. Each application hosted in a container is assigned to a group, where an application cannot steal resources from another application anymore, because the resource assignments of an group managed by Cgroups prevents this from happening \cite{KernelCGroupsV12018, KernelCGroupV22015, IntelLXCHyperVisor2014}. \\
 
 \mysubsubsection{Namepsaces}
-CGroups manage how many resources can be used by group and namespaces manage the view of the system to a group. A container is managed in a namespace and therefore has a limited view of the system such as networks or other processes. Namespaces provide the isolation of a container.
+Cgroups manage how many resources can be used by processes in a group and namespaces manage the view of the system to processes. A container is managed in a namespace and therefore it has a limited view of the system such as networks and Process IDs (PIDs), depending on the configuration of the namespace the container is part of. Namespaces are a fundamental concept of LXC, and namespaces provide the isolation of a container \cite{LinuxNamespaces2018, IntelLXCHyperVisor2014}. \\
 
+Docker has made the usage of LXC simple, but it is very hard to maintain a large set of Docker Containers via the Docker CLI or implement a cluster with Docker Machine. To much would have to be scripted manually, which would fast become very hard to maintain. For a local development or a small set of applications the Docker CLI, Docker Compose and Docker Machine is suitable, but when it comes to large dynamic infrastructures with a large set of Docker Containers to maintain, then platforms like Kubernetes, which is discussed in Chapter \vref{cha:caas}, will have to be used \cite{DockerSwarm2018, LinuxKubernetes2018}. 
+ 
 
