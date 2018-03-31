@@ -1,12 +1,15 @@
-\chapter{Contaier as a Service with Kubernetes}
+\chapter{Container as a Service with Kubernetes}
 \label{cha:caas}
-Container as a Service (CaaS) ...
+Container as a Service (CaaS) is a term introduced by cloud providers, which provide a cloud based container environment. But CaaS is more then just a container environment like Docker, it provides orchestration and monitoring tooling for containers, and additionally CaaS is considered to be a model for IT organizations and developers how they can build, ship and run their applications anywhere. There are multiple CaaS providers on the market, but the most popular providers are Azure Container Service, Amazon Elastic Container Service for Kubernetes (Amazon EKS) and Google Kubernetes Engine, where they bring in their own flavor of CaaS but all of them use Kubernetes beneath  \cite{CNCFKubernetes2018, MicrosoftAzureAKS2018, AmazonWebServicesEKS2018, GoogleCloudKE2018}. \\
+
+Kubernetes is a platform for automating deployments, scaling and operation of containers across a cluster of nodes. Kubernetes provides a tooling for managing a cluster of nodes and managing the containers running on those nodes. Kubernetes has been invented by Google and is open source since 2015 and managed by the Cloud Native Computing Foundation, where the Cloud Native Computing Foundation is under the umbrella of the Linux Foundation. Kubernetes has become the most popular container orchestration tooling on the market and is used by many CaaS and PaaS providers \cite{CNCF2018}.
 
 \section{The need for Container as a Service}
 \label{sec:caas-need-for-caas}
+As mentioned in \vref{sec:docker-linux-container}, running and maintaining a large set of containers becomes very hard if only the Docker is used. The deployment, scaling and management of containers must be done effortlessly, otherwise it would be almost impossible to run a large set of containers. Thus, a platform like Kubernetes is vital to enterprises and developers. Enterprises and developers need the flexibility to roll out new versions of their applications or scale them depending on the workload. 
 
 \section{Kubernetes}
-\label{sec:caas-kubernetes}
+\label{sec:caas-kubernetes}L
 
 \section{Virtual Machine Orchestration vs Container Orchestration}
 \label{sec:caas-vm-vs-container-orchestration}
