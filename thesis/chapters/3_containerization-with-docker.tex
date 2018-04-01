@@ -29,7 +29,7 @@ Figure \ref{fig:docker-engine} illustrates the Docker Engine architecture hosted
 
 The Docker Engine was initially designed for LXC exclusively but has been ported to Windows. Docker Images and Containers created for Windows OS are not supported on a Linux OS and visa versa. The Docker Images and Containers for a Windows OS differ from those for a Linux OS, but the principles of Docker Images and Docker Containers are the same.
 
-\mysubsubsection{Docker Damon}
+\mysubsubsection{Docker Daemon}
 \label{sec:docker-daemon}
 The Docker Daemon represents the background process, which creates, runs and manages the Docker Containers on the Docker Host, similar to a VM Hypervisor. The Docker Daemon strongly depends on the kernel of the host OS, therefore incompatibilities could cause the Docker Daemon to fail functioning. The communication with the Docker Daemon is performed via a REST-API, because the Docker Engine is designed as a server client architecture. \\
 
