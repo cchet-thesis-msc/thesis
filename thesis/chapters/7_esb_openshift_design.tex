@@ -12,7 +12,7 @@ The Figure \vref{fig:esboc-design-services} illustrates the concept of the servi
 	\includegraphics[scale=1]{images/esboc-design-services.pdf}
 	\caption{Service Architecture}
 	\label{fig:esboc-design-services}
-\end{figure} 
+\end{figure}
 
 \subsection{Client}
 \label{sec:esboc-design-service-client}
@@ -29,18 +29,38 @@ The integration service acts as the front-end service of the database and the ba
 \subsection{Database}
 \label{sec:esboc-design-service-database}
 The database acts as the data source for client which indirectly access this database via the integration service or a back-end service which itself is backed by the integration service. This level of abstraction of the consumers allows the database to evolve decoupled from the actual consumers. There is only the integration service which would have to be modified, when the underlying database or its schema changes.
+\newpage
 
 \section{Service Requirements}
 \label{sec:esboc-requirements-service}
 In this section the service requirements will be specified, which will ensure that the services are properly implemented and can effortlessly be managed and monitored. Especially the management and monitoring becomes very important when moving from a conventional ESB application, like an application running on JBoss Fuse, to a microservice architecture, which is hosted on a PaaS platform like Openshift. Hosted on Openshift, the services run completely decoupled from each other with their own life cycle, which makes the management and monitoring harder compared to manage and monitor a monolithic application.
 
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[scale=1]{images/esboc-requirement-services.pdf}
+	\caption{Service Requirements}
+	\label{fig:esboc-requirements-services}
+\end{figure} 
+Figure \vref{fig:esboc-requirements-services} illustrates the hierarchy of the service requirements, represented by the layers below the \mentionedtext{User Code} layer. The service requirements, which are specified in the following sections, will ensure that the microservices are
+\begin{itemize}
+	\item secure,
+	\item configurable for multiple environments
+	\item observable by developers and operators,
+	\item resilient to failures
+	\item and measurable.
+\end{itemize}
+
 \subsection{Technology}
 \label{sec:esboc-requirements-service-technology}
 The services will be implemented in Java with the Java Enterprise Platform and the MicroProfile specifications. The MicroProfile specifications are an effort of the Eclipse Foundation to make Java applications ready for the cloud, where especially monitoring is a very important aspect to consider when it comes to distributed services. The services will be hosted as standalone applications like Spring Boot applications \cite{EclipseMicroprofileCharter2017, EclipseEE4JCharter2017}.
 
-\subsection{State Handling}
-\label{sec:esboc-requirements-service-state}
-The service will be stateless, so that the services can be scaled and any request be handled by any instance of the service. Additionally Blue-Green-Releases and Canary-Releases are easily possible with stateless services \cite{FowlerBlueGreenRelease2010, FowlerCanaryRelease2010}. Multiple instances of stateful service hosted on a PaaS platform are not flexible as stateless services, because sessions must stick to a particular service instance, and persistence volumes have to be shared between the service instances.  
+\subsection{Security}
+\label{sec:esboc-requirements-service-security}
+The integration service will be secured with OAuth to protect its exposed endpoints from unauthorized access. OAuth is a token based authentication scheme, which has become popular over past few years. The  integration service must authenticate its client the service application against an central authentication service, whereby the the service application will retrieve the access tokens from the central authentication service \cite{OAuth2018}.
+
+\subsection{Configuration}
+\label{sec:esboc-requirements-service-config}
+The MicroProfile specifications provide the MicroProfile-Config specification, which provides an API to inject configuration parameters into classes, which can be loaded from different configuration sources. The services must provide the possibility to be configurable for different stages such as DEV (development), TEST (testing) and PROD (productive environment), where the services must not directly access the configuration sources, or hard code configuration in the source code unless its a default parameter \cite{EclipseMicroprofileConfig2018}.
 
 \subsection{Monitoring}
 \label{sec:esboc-requirements-service-monitoring}
@@ -52,40 +72,38 @@ Distributed Tracing allows to comprehend service or method call chains. The Micr
 \mysubsubsection{Distributed Logging}
 Distributed Logging allows to comprehend logs across service boundaries within a service call chain, where the logs of a service call chain have to be marked with a transaction id. The services must be able to provide all of their logging to a central service, whereby the logs are marked with a transaction id, which is equivalent to the transaction id of the service tracing. Optionally the services are allowed to add additional markers, which can help developers and operators to analyze problems or to group service logs.
 
-\subsection{Configuration}
-\label{sec:esboc-requirements-service-config}
-The MicroProfile specifications provide the MicroProfile-Config specification, which provides an API to inject configuration parameters into classes, which can be loaded from different configuration sources. The services must provide the possibility to be configurable for different stages such as DEV (development), TEST (testing) and PROD (productive environment), where the services must not directly access the configuration sources, or hard code configuration in the source code unless its a default parameter \cite{EclipseMicroprofileConfig2018}.
-
 \subsection{Fault Tolerance}
 \label{sec:esboc-requirements-service-fault}
 The MicroProfile specifications provide the specification MicroProfile-Fault-Tolerance, which provides an API to define fault tolerance behavior such as retries, timeouts and error fall-backs. The fault tolerance of a service means that, if a depending service is not accessible at the time, a service must not fail immediately after the first try, but the service should retry to call the depending service for several times, and fail when all retries have failed. Such a behavior ensures that short timed communication errors, redeployments or overloads do not immediately cause a service to fail. The services must provide proper fault tolerance configuration and fall-back behavior to be able to recover from such errors in a proper manner. \cite{EclipseMicroprofileFault2018}.   
+
+\subsection{State Handling}
+\label{sec:esboc-requirements-service-state}
+The service will be stateless, so that the services can be scaled and any request be handled by any instance of the service. Additionally Blue-Green-Releases and Canary-Releases are easily possible with stateless services \cite{FowlerBlueGreenRelease2010, FowlerCanaryRelease2010}. Multiple instances of stateful service hosted on a PaaS platform are not flexible as stateless services, because sessions must stick to a particular service instance, and persistence volumes have to be shared between the service instances.  
 
 \subsection{API Management}
 \label{sec:esboc-requirements-service-api}
 The API management of a public API such as REST-API REST-Models ensure that the clients, using a public API, are not broken by changes made on that API. There are several opinions on how API management can be done. Swagger has become very popular for documenting REST-API, where the documentation can be used to generate clients, provide documentation for developers and to test the public API. The services must be capable of migrating their public API in a way that the clients are not broken by the change. The replaced API version must be supported as well as the new one, so that the client is not forced to modify its source code \cite{SmartBearSwagger2018}.
 
 \textbf{ADD resource which christoph found during liwestfsw research} 
-
 \section{Openshift Architecture}
 \label{sec:esboc-design-oc}
+Figure \vref{fig:esboc-design-openshift-project} illustrates the structure of the Openshift Project, as well as the service dependencies within the Openshift Project. As discussed in Section \vref{sec:paas-openshift}, Openshift isolates the namespaces, which are representing an Openshift Project. Therefore, the services within this Openshift Project, which are not exposed via an Openshift Route, are implicitly protected from external access from the Internet or services hosted in another Openshift Projects. The Openshift Project contains the service application, the database and the integration service, whereby the service application and the database would normally be located outside the Openshift Cluster. The service application has access to the Internet and will be accessed by the client from the Internet via its public address. The integration service and the database are not exposed to the Internet and can only be accessed within the Openshift Project by their service names.
 
-\subsection{Project}
-\label{sec:esboc-design-oc-}
-
-\subsection{Templates}
-\label{sec:esboc-design-oc-config}
-
-\subsection{Scripts}
-\label{sec:esboc-design-oc-secrets}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[scale=1]{images/esboc-design-openshift.pdf}
+	\caption{Openshift Project architecture}
+	\label{fig:esboc-design-openshift-project}
+\end{figure} 
 
 \section{Openshift Requirements}
 \label{sec:esboc-requirements-oc}
+The implementation of the Openshift resources such as templates and scripts must be implemented under consideration of the principles of IaC, as discussed in Section \vref{sec:iac-principles}. Keeping to the principles of IaC will ensure, that the Openshift Project can effortlessly be recreated with a different configurations for the intended stages. This allows the developer for instance to implement integration tests, where service dependencies such as the database can be mocked or be replaced by a test database.
+
+\subsection{Openshift Project}
+\label{sec:esboc-requirements-oc-project}
+The Openshift Project will not only host the services, but will manages their configuration and secrets, which have been discussed in Section \vref{sec:caas-kubernetes-objects}. The separation of the service implementation from the configuration as well as the secrets, ensures that the configurations and secrets can be applied on a service without a new release, and that developers do not have to handle secrets anymore, which increases the security.
 
 \subsection{Monitoring}
 \label{sec:esboc-requirements-oc-monitoring}
-
-\subsection{Configuration}
-\label{sec:esboc-requirements-oc-config}
-
-\subsection{Secrets}
-\label{sec:esboc-requirements-oc-secrets}
+To be able to monitor the hosted services, the Openshift project must host two monitoring services, one for log aggregation, and another one for tracing aggregation. In a real world example, the log aggregation and tracing services would be located in another Openshift Project or outside the Openshift Cluster. 

@@ -17,7 +17,7 @@ Enterprises can profit from PaaS platforms by defining templates for services th
 PaaS platforms like Openshift usually provide an integration in a Continuous Integration / Continuous Deployment (CI/CD) workflow, which allows to automatically build and deploy new service releases in the PaaS platform automatically via web hooks. Therefore, the PaaS platforms are integrated in the whole software life cycle. This decreases the effort of the developers to interact with the cloud platform and provide additional automation.
  
 \section{Openshift}
-\label{sec:paas-kubernetes}
+\label{sec:paas-openshift}
 Openshift is a open source PaaS platform, which uses Docker and Kubernetes for the Docker Container orchestration. Openshift is designed as a client server architecture and a master slave architecture, the same way as a Kubernetes Cluster, which has been discussed in Section \vref{sec:caas-kubernetes}. An Openshift Cluster can contain multiple Kubernetes Clusters which are managed by a Openshift Master-Node, which is discussed in Section \vref{sec:paas-openshift-master}, which manages the Kubernetes Master-Nodes. Openshift provides Openshift Projects, which are discussed in Section \vref{sec:paas-openshift-project}, which place all defined resources in a Kubernetes namespace, and which are isolated form each other. The following Figure \vref{fig:paas-openshift-kubernetes-cluster-architecture} illustrates the architecture of an Openshift Cluster \cite{OpenshiftDeepDive2014, OpenshiftCoreConcepts2018}.
 
 \newpage
