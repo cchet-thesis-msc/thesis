@@ -37,6 +37,34 @@
 	baselinestretch=1,
 	fontsize=\footnotesize
 }
+\newmintedfile[javaSourceFile]{java}{
+	linenos=true, 
+	frame=single, 
+	breaklines=true, 
+	tabsize=2,
+	numbersep=5pt,
+	xleftmargin=10pt,
+	baselinestretch=1,
+	fontsize=\footnotesize
+}
+\newmintinline[inlineJava]{java}{}
+\newminted[javaSource]{java}{
+	breaklines=true, 
+	tabsize=2,
+	autogobble=true,
+	breakautoindent=false
+}
+\newmintedfile[xmlSourceFile]{xml}{
+	linenos=true, 
+	frame=single, 
+	breaklines=true, 
+	tabsize=2,
+	numbersep=5pt,
+	xleftmargin=10pt,
+	baselinestretch=1,
+	fontsize=\footnotesize
+}
+\newmintinline[inlineBash]{bash}{}
 % -----------------------------------------------------
 \graphicspath{{images/}}    % location of images and graphics
 \logofile{logo}				% logo file = images/logo.pdf (use \logofile{} for no logo)
@@ -90,7 +118,7 @@
 \include{chapters/6_enterprise-service-bus}
 \include{chapters/7_esb_openshift_design}
 \include{chapters/8_esb_openshift_impl}
-%\include{chapters/9_esb_openshift_eval}
+\include{chapters/9_esb_openshift_eval}
 
 %%%----------------------------------------------------------
 \appendix                                         % appendix 
