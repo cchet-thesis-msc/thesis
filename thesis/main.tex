@@ -27,44 +27,53 @@
 \newcommand{\mysubsubsection}[1]{{\subsubsection{\textbf{#1}}}}
 \newcommand{\mentionedtext}[1]{{\textit{{#1}}}}
 \newcommand{\sourceDir}{./sources}
+\newcommand{\sourceFontSize}{\fontsize{10pt}{11.5}}
+\newmintedfile[bashFile]{bash}{
+	linenos=false, 
+	frame=none, 
+	breaklines=true, 
+	tabsize=2,
+	numbersep=5pt,
+	xleftmargin=10pt,
+	baselinestretch=1,
+	fontsize=\sourceFontSize
+}
 \newmintedfile[yamlFile]{yaml}{
-	linenos=true, 
-	frame=single, 
+	linenos=false, 
+	frame=none, 
 	breaklines=true, 
 	tabsize=2,
 	numbersep=5pt,
 	xleftmargin=10pt,
 	baselinestretch=1,
-	fontsize=\footnotesize
+	fontsize=\sourceFontSize
 }
-\newmintedfile[javaSourceFile]{java}{
-	linenos=true, 
-	frame=single, 
+\newmintedfile[javaFile]{java}{
+	linenos=false, 
+	frame=none, 
 	breaklines=true, 
 	tabsize=2,
 	numbersep=5pt,
 	xleftmargin=10pt,
 	baselinestretch=1,
-	fontsize=\footnotesize
+	fontsize=\sourceFontSize
 }
-\newmintinline[inlineJava]{java}{}
-\newminted[javaSource]{java}{
+\newmintedfile[xmlFile]{xml}{
 	breaklines=true, 
 	tabsize=2,
+	numbersep=5pt,
+	xleftmargin=10pt,
+	baselinestretch=1,
 	autogobble=true,
-	breakautoindent=false
+	breakautoindent=false,
+	fontsize=\sourceFontSize
 }
-\newmintedfile[xmlSourceFile]{xml}{
-	linenos=true, 
-	frame=single, 
-	breaklines=true, 
-	tabsize=2,
-	numbersep=5pt,
-	xleftmargin=10pt,
-	baselinestretch=1,
-	fontsize=\footnotesize
+\newmintinline[inlineJava]{java}{
+	fontsize=\sourceFontSize
 }
-\newmintinline[inlineBash]{bash}{}
+\newmintinline[inlineBash]{bash}{
+	fontsize=\sourceFontSize
+}
 % -----------------------------------------------------
 \graphicspath{{images/}}    % location of images and graphics
 \logofile{logo}				% logo file = images/logo.pdf (use \logofile{} for no logo)

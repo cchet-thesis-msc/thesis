@@ -30,47 +30,113 @@ The secrets needed by the services are managed in Openshift, and no developer ha
 
 \subsection{Service Implementation}
 \label{sec:esbi-security-service}
-The dependency of Listing \vref{ls:esboi-security-pom} and the configuration of Listing \vref{ls:esboi-security-yaml} are needed to secure endpoints with Keycloak. The security is applied automatically by intercepting the requests and validating the provided token. Additionally the applied endpoint security is transparent from the user code. 
+This section will discuss the implementation of the security in the service implementations, whereby the implementation is represented by the in further discussed configurations. 
+
 \begin{listing}
-\begin{minted}{xml}
-<dependency>
-  <groupId>org.wildfly.swarm</groupId>
-  <artifactId>keycloak</artifactId>
-</dependency>
-\end{minted}
-\caption{Wildfly Swarm Keycloak dependency}
-\label{ls:esboi-security-pom}
+	\xmlFile{\sourceDir/maven-keycloak-swarm.xml}
+	\caption{Wildfly Swarm Keycloak dependency in pom.xml}
+	\label{ls:esboi-security-pom}
 \end{listing}
+
+Listing \vref{ls:esboi-security-pom} shows the dependency, which brings in the Keycloak Adapter, integrates itself into the Java Web-Security mechanisms, and can therefore be configured with Java Web-Security security constraints.
+
 \begin{listing}
-	\begin{minted}{yaml}
-swarm:
-  deployment:
-    ${project.build.finalName}.war:
-      web:
-        login-config:
-          auth-method: KEYCLOAK
-        security-constraints:
-          - url-pattern: /rest-api/report/generate
-            roles: [client]
-\end{minted}
-\caption{Wildfly Swarm Keycloak configuration}
-\label{ls:esboi-security-yaml}
+	\yamlFile{\sourceDir/project-stages-security.yml}
+	\caption{Security configuration in project-stages.yml}
+	\label{ls:esboi-security-yaml}
 \end{listing}
-\ \\
-Sometimes user code needs to access secrets, such as OAuth Client-Id and Client-Secret, to be able to connect to a secured service, whereby the secrets are used in the user code the same way as configurations, which is discussed in Section \vref{sec:esbi-configuration}.
+
+Listing \vref{ls:esboi-security-yaml} shows an excerpt of the Wildfly Swarm used project-stage.yml file, which configures the security constraints for the rest endpoint. The secrets consumed by the service are used the same way as non-sensitive configurations, which are discussed in Section \vref{sec:esbi-configuration}.
+\\ \\
+The following two listings are excerpts of the deployment.yml Openshift Template, which is managed in the service code base.
+
+\begin{listing}
+	\yamlFile{\sourceDir/deployment-volume-secret.yml}
+	\caption{Configuration of the secret injection}
+	\label{ls:esboi-security-oc-deployment-volume-secret}
+\end{listing}
+
+Listing \vref{ls:esboi-security-oc-deployment-volume-secret} shows the specification of the secret injection into a Docker Volume. The secrets get injected as files, whereby the file name represents the key and the content represents the value of the secret. Therefore, that the secrets are managed externally, the developers need to provide the secret name for the service deployment configuration. In this case an expression is sued, which can be replaced by Maven properties, whereby the Maven Properties can be provided in the pom.xml or provided/overwritten by Java Options, during the build process.
+
+\begin{listing}
+	\yamlFile{\sourceDir/deployment-volume-secret-container.yml}
+	\caption{Configuration volume mount}
+	\label{ls:esboi-security-oc-deployment-volume-mount}
+\end{listing}
+
+Listing \vref{ls:esboi-security-oc-deployment-volume-mount} show the specification of the mount of the Docker Volume, which provides the secrets. The mount path is also represented by a Maven Property, because this path is also used in the project-stages.yml file, where it points to the service configuration source for the productive stage. 
 
 \subsection{Openshift Implementation}
 \label{sec:esbi-security-openshift}
-TODO
+This section will discuss the Openshift implementation, whereby the implementation is represented by a shell script, which manages the secrets. 
+
+\begin{listing}
+	\bashFile{\sourceDir/bash-oc-secret.txt}
+	\caption{Openshift CLI command for creating the secret}
+	\label{ls:esboi-security-oc-secret}
+\end{listing}
+
+Listing \vref{ls:esboi-security-oc-secret} shows the Openshift CLI-Command, which is used to create the secrets. The secrets are consumed by the service application, which needs to perform authentication against the integration service and needs to know where the integration service and the authentication service are located. 
+\\ \\
+The next Section \vref{sec:esbi-configuration} will discuss the configuration of the service in an Openshift environment, which for this prototype represents the ESB. The usage of secrets is th same as the usage of configuration properties, because the only difference is the sensitivity of the data. The secrets which have been injected into the container, are read by the runtime configuration mechanism, which exposes them as configuration properties to the service implementation.
+
+\newpage
 
 \section{Configuration}
 \label{sec:esbi-configuration}
+The service uses the MicroProfile Config-API and the implementation provided by Wildfly Swarm to define used configuration source for the different stages and to inject configurations into service implementations. The developers are only bound to the usage, key and value type, but developers are not bound to the configuration source, which allows to provide the configurations from different sources for different stages. 
 
 \subsection{Service Implementation}
 \label{sec:esbi-config-service}
+This section will discuss the service implementation of the usage of the MicroProfile Config-API, and of the configuration for the configuration source for the different stages.  
+
+\begin{listing}
+	\xmlFile{\sourceDir/maven-microprofile-config.xml}
+	\caption{Wildfly Swarm MicroProfile-Config dependency in pom.xml}
+	\label{ls:esboi-config-pom}
+\end{listing}
+
+Listing \vref{ls:esboi-config-pom} shows the Wildfly swarm MicroProfile-Config dependency, which brings in all needed integrations into Wildfly Swarm, so that developers can configure configuration sources and inject configuration properties.
+
+\begin{listing}
+	\bashFile{\sourceDir/project-stages-micro-config-dev.yml}
+	\caption{Hard coded configuration for development}
+	\label{ls:esboi-config-project-stages-dev}
+\end{listing}
+
+Listing \vref{ls:esboi-config-project-stages-dev} shows the configuration of the configuration source with the name \mentionedtext{app.secrets} for the development stage, whereby the configuration properties are provided hard coded.
+\newpage
+
+\begin{listing}
+	\yamlFile{\sourceDir/project-stages-micro-config-prod.yml}
+	\caption{Hard coded configuration for production}
+	\label{ls:esboi-config-project-stages-prod}
+\end{listing}
+
+Listing \vref{ls:esboi-config-project-stages-prod} shows the configuration of the configuration source with the name \mentionedtext{app.secrets} for the production stage, whereby the configurations are loaded via a directory. The directory location is represented by an Maven Property, because its used in multiple configuration files, as already discussed in Section \vref{sec:esbi-security-service}.
+
+
+\begin{listing}
+	\javaFile{\sourceDir/java-config-inject.java}
+	\caption{Injection of Keycloak configuration parameters}
+	\label{ls:esboi-config-inject}
+\end{listing}
+
+Listing \vref{ls:esboi-config-inject} shows the injection of the Keycloak secrets, which are used to retrieve an token for the token based authentication of the rest client calls. The configuration properties are actual secrets, which the developers does not see when injecting, it because the developers do not have access to the underlying configuration source.
 
 \subsection{Openshift Implementation}
 \label{sec:esbi-config-openshift}
+The Openshift implementation is already covered by Section \vref{sec:esbi-security-openshift}, because all of the configuration parameters are managed as secrets. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
 
 \section{Tracing}
 \label{sec:esbi-tracing}
