@@ -1,6 +1,6 @@
 \chapter{Design ESB in Openshift}
 \label{cha:esboc}
-As discussed in Chapter \vref{cha:esb}, an ESB is a distributed computing architecture, where distributed services act as a consumer or producer. These services provide a business value in form of an integration of an internal or external service for an enterprise. There are multiple providers of ESB middleware like JBoss Fuse, as discussed in Section \vref{sec:esb-middleware}, which provide tooling for implementing service components hosted on an ESB. It should be possible to migrate such a service component to a microservice, where features provided by the ESB middleware will have to be replaced by other implementations.
+As discussed in Chapter \vref{cha:esb}, an ESB is a distributed computing architecture, where distributed services act as a consumer or producer. These services provide a business value in form of an integration of an internal or external service for an enterprise. There are multiple providers of ESB middleware like JBoss Fuse, which provide tooling for implementing service components hosted on an ESB. It should be possible to migrate such a service component to a microservice, where features provided by the ESB middleware will have to be replaced by other implementations.
 \\ \\
 In this chapter an ESB application will be designed, where a service and a database will be integrated into each other by a another service. An Openshift Project will represent the service bus, which hosts the integration service, provides configuration and manages secrets for it. The concrete implementation of the services is considered to be not important, because they services will be ordinary Java web applications, which are known to be able to consume frameworks used in the Java Enterprise field. More important is the concept of how to represent a service component of an ESB as a microservice and how to host such microservices in Openshift which acts as the actual service bus.
 
@@ -9,8 +9,8 @@ The Figure \vref{fig:esboc-design-services} illustrates the concept of the servi
 
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[scale=1]{images/esboc-design-services.pdf}
-	\caption{Service Architecture}
+	\includegraphics[scale=1]{images/esboc-design-microservice.pdf}
+	\caption{Microservice Architecture}
 	\label{fig:esboc-design-services}
 \end{figure}
 
@@ -29,7 +29,6 @@ The integration service acts as the front-end service of the database and the ba
 \subsection{Database}
 \label{sec:esboc-design-service-database}
 The database acts as the data source for client which indirectly access this database via the integration service or a back-end service which itself is backed by the integration service. This level of abstraction of the consumers allows the database to evolve decoupled from the actual consumers. There is only the integration service which would have to be modified, when the underlying database or its schema changes.
-\newpage
 
 \section{Service Requirements}
 \label{sec:esboc-requirements-service}
