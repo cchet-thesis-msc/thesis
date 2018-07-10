@@ -1,11 +1,11 @@
 \chapter{Design ESB in Openshift}
 \label{cha:esboc}
-As discussed in Chapter \vref{cha:esb}, an ESB is a distributed computing architecture, where distributed services act as a consumer or producer. These services provide a business value in form of an integration of an internal or external service for an enterprise. There are multiple providers of ESB middleware like JBoss Fuse, which provide tooling for implementing service components hosted on an ESB. It should be possible to migrate such a service component to a microservice, where features provided by the ESB middleware will have to be replaced by other implementations.
+As discussed in Chapter \vref{cha:esb}, an ESB is a distributed computing architecture, where distributed services act as a consumer or producer. These integration services provide a business value for an enterprise in form of an integration of an internal or external service. There are multiple providers of ESB middleware like JBoss Fuse, which provide tooling for implementing Service Components running on an ESB. It should be possible to migrate such a Service Component to a microservice, where features provided by the ESB middleware such as mediation and bindings will have to be replaced by other implementations.
 \\ \\
-In this chapter an ESB application will be designed, where a service and a database will be integrated into each other by a another service. An Openshift Project will represent the service bus, which hosts the integration service, provides configuration and manages secrets for it. The concrete implementation of the services is considered to be not important, because they services will be ordinary Java web applications, which are known to be able to consume frameworks used in the Java Enterprise field. More important is the concept of how to represent a service component of an ESB as a microservice and how to host such microservices in Openshift which acts as the actual service bus.
+In this chapter, the ESB integration as discussed in Section \vref{sec:esb-integration-example} and illustrated in Figure \vref{fig:esb-design-sca}, will be implemented as microservices, which will be hosted within an Openshift Project. The hosting Openshift Project will represent the ESB, which provides orchestration, mediation, configurations and secrets for the hosted integration services. The concrete functionality of the services is considered not to be important. More important is how to design and implemented the integration of the microservices, which represent the Service Component, and how to run them on a Openshift Cluster.
 
-\section{Service Architecture}
-The Figure \vref{fig:esboc-design-services} illustrates the concept of the service architecture. This service architecture acts as an example of an application integration on an ESB. In an real world example such an service architecture would only represent a fraction of the actual services hosted on the ESB, which leads to the question how such an ESB can be monitored, especially when the integration services are hosted as separate microservices? The prototype will address the need for monitoring of the microservices by implementing tracing and logging features, which are discussed in Section \vref{sec:esboc-requirements-service}.
+\section{Microservice Architecture}
+Figure \vref{fig:esboc-design-services} illustrates the microservice architecture of the integration prototype, based on the architecture of Figure \vref{fig:esb-design-sca}. Conceptually, the transformation of a Service Component to a microservice is easy, because a Service Component and a microservice act very similar. Compared to a Service Component of a ESB middleware, a microservice is completely separated from the other services, brings in its own dependencies and runs in its own runtime environment. From the implementation point of view, the microservice needs to provide an runtime environment, which formerly was provided by the ESB middleware. Therefore, that the microservices are completely separated, the access of other services is not mediated as usual anymore, because the communication is now performed via standard protocols like HTTP(S). In a monolithic ESB application running on EAP, every Service Component accessed via a Reference uses the actual service instance within the same runtime environment. With microservices, running in their own runtime environment, it is not possible to access the service instance directly anymore. Only communication via standard protocols such as HTTP(S) is supported.
 
 \begin{figure}[htbp]
 	\centering
@@ -14,79 +14,59 @@ The Figure \vref{fig:esboc-design-services} illustrates the concept of the servi
 	\label{fig:esboc-design-services}
 \end{figure}
 
-\subsection{Client}
-\label{sec:esboc-design-service-client}
-The client will be a Java REST-Client which consumes data from the backing service application. The REST-Client could be a single page web application or an other back-end application. It will have no direct access to the database or the integration service, which integrates the database and the Service application, and is therefore completely abstracted of the underlying data storage and its schema.
-
-\subsection{Service Application}
-\label{sec:esboc-design-service-app}
-The service application act as the back-end service for the client and produces data consumed by the client. The service application consumes from the integration service, which acts as the its back-end service. Same as the client, the service application is abstracted of the underlying data storage and its schema. 
-
-\subsection{Integration Service}
-\label{sec:esboc-design-service-integration}
-The integration service acts as the front-end service of the database and the back-end service for the consumers. The integration service ensures that the consumers are abstracted of the underlying data storage and its schema, as well as that the database is accessed in a proper manner, by providing a public API which defines the operations and models.
-
-\subsection{Database}
-\label{sec:esboc-design-service-database}
-The database acts as the data source for client which indirectly access this database via the integration service or a back-end service which itself is backed by the integration service. This level of abstraction of the consumers allows the database to evolve decoupled from the actual consumers. There is only the integration service which would have to be modified, when the underlying database or its schema changes.
-
-\section{Service Requirements}
-\label{sec:esboc-requirements-service}
-In this section the service requirements will be specified, which will ensure that the services are properly implemented and can effortlessly be managed and monitored. Especially the management and monitoring becomes very important when moving from a conventional ESB application, like an application running on JBoss Fuse, to a microservice architecture, which is hosted on a PaaS platform like Openshift. Hosted on Openshift, the services run completely decoupled from each other with their own life cycle, which makes the management and monitoring harder compared to manage and monitor a monolithic application.
-
-\begin{figure}[htbp]
-	\centering
-	\includegraphics[scale=1]{images/esboc-requirement-services.pdf}
-	\caption{Service Requirements}
-	\label{fig:esboc-requirements-services}
-\end{figure} 
-Figure \vref{fig:esboc-requirements-services} illustrates the hierarchy of the service requirements, represented by the layers below the \mentionedtext{User Code} layer. The service requirements, which are specified in the following sections, will ensure that the microservices are
+\section{Microservice Aspects}
+\label{sec:esboc-aspects}
+In this section the necessary aspects of microservices are discussed, which will ensure that the integration services are properly implemented and can effortlessly be managed. Especially the monitoring of the integration services becomes very important when moving from a conventional monolithic ESB application, like an application running on JBoss Fuse, to microservice based integration services. Integration services running as microservices on Openshift, are running in their and therefore cannot share any runtime resources, which are available in a monolithic application. 
+\\ \\
+Figure \vref{fig:esboc-aspects} illustrates the hierarchy of the microservice aspects, which are discussed in the following sections. The in the following discussed microservice aspects shall ensure that the microservices are 
 \begin{itemize}
 	\item secure,
-	\item configurable for multiple environments
+	\item configurable for multiple environments,
 	\item observable by developers and operators,
 	\item resilient to failures
 	\item and measurable.
 \end{itemize}
 
-\subsection{Technology}
-\label{sec:esboc-requirements-service-technology}
-The services will be implemented in Java with the Java Enterprise Platform and the MicroProfile specifications. The MicroProfile specifications are an effort of the Eclipse Foundation to make Java applications ready for the cloud, where especially monitoring is a very important aspect to consider when it comes to distributed services. The services will be hosted as standalone applications like Spring Boot applications \cite{EclipseMicroprofileCharter2017, EclipseEE4JCharter2017}.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[scale=1]{images/esboc-requirement-services.pdf}
+	\caption{Service Requirements}
+	\label{fig:esboc-aspects}
+\end{figure} 
 
 \subsection{Security}
-\label{sec:esboc-requirements-service-security}
-The integration service will be secured with OAuth to protect its exposed endpoints from unauthorized access. OAuth is a token based authentication scheme, which has become popular over past few years. The  integration service must authenticate its client the service application against an central authentication service, whereby the the service application will retrieve the access tokens from the central authentication service \cite{OAuth2018}.
+\label{sec:esboc-aspects-security}
+Distributed microservices need to be secured properly from unauthorized access, therefore the microservices will be secured with OAuth. OAuth is a token based authentication scheme, which has become popular over past few years. The Integration Microservice must authenticate its client, the Application Service against an central authentication service, whereby the Application Service will retrieve the access tokens from the central authentication service \cite{OAuth2018}.
 
 \subsection{Configuration}
-\label{sec:esboc-requirements-service-config}
-The MicroProfile specifications provide the MicroProfile-Config specification, which provides an API to inject configuration parameters into classes, which can be loaded from different configuration sources. The services must provide the possibility to be configurable for different stages such as DEV (development), TEST (testing) and PROD (productive environment), where the services must not directly access the configuration sources, or hard code configuration in the source code unless its a default parameter \cite{EclipseMicroprofileConfig2018}.
+\label{sec:esboc-aspects-config}
+The MicroProfile specifications provide the MicroProfile-Config specification, which provides an API to inject configuration parameters into objects. The injected configuration parameters are loaded from so called configuration sources. The microservices must provide the possibility to be configurable for different stages such as DEV (development), TEST (testing) and PROD (productive environment), whereby  the services are only allowed to use configuration parameters via injection  \cite{EclipseMicroprofileConfig2018}.
 
-\subsection{Monitoring}
-\label{sec:esboc-requirements-service-monitoring}
-Monitoring is a essential aspect in distributed service architecture. Operators and developers need logging and tracing information of the services to comprehend errors in the services, where the cause of a problem could be located at another service as the service where a problem is reported.
+\subsection{Tracing}
+\label{sec:esboc-aspects-tracing}
+Distributed Tracing allows to comprehend service or method call chains. The MicroProfile specifications provides the OpenTracing specification, which provides an API for tracing an application on a method level or across service boundaries. The services must be able to collect tracing information and send this data to a central tracing service \cite{CNCFOpentracing2018}.
 
-\mysubsubsection{Distributed Tracing}
-Distributed Tracing allows to comprehend service or method call chains. The MicroProfile specifications provides the OpenTracing specification, which provides an API for tracing an application on a method level or across service boundaries. The services must be able to collect tracing information about the REST and the related service method calls, and send this data to a central tracing service. The tracing implementation must be implemented separately from the service logic \cite{CNCFOpentracing2018}.
+\subsection{Logging}
+\label{sec:esboc-aspects-logging}
+Distributed Logging allows to comprehend logs across service boundaries within a service call chain, where the logs of a service call chain have to be marked with a transaction id. The services must be able to provide all of their logging to a central service, whereby the logs are marked with a transaction id, which is provided by the OpenTracing API. Optionally, the services are allowed to add additional markers, which can help developers and operators to analyze problems or to group service logs.
 
-\mysubsubsection{Distributed Logging}
-Distributed Logging allows to comprehend logs across service boundaries within a service call chain, where the logs of a service call chain have to be marked with a transaction id. The services must be able to provide all of their logging to a central service, whereby the logs are marked with a transaction id, which is equivalent to the transaction id of the service tracing. Optionally the services are allowed to add additional markers, which can help developers and operators to analyze problems or to group service logs.
+\subsection{Metrics}
+\label{sec:esboc-aspects-metrics}
+The MicroProfile specifications provide the specification MicroProfile-Metric, which provides an API to define and manage metrics. Metrics allow to comprehend the state of a microservice such as resource consumption, REST-API calls or Failure counts. Metrics along with tracing and distributed logging, provide the necessary data operators need to analyze failures in services or service call chains. The services must provide and publish metrics, which can be made available to a central metric service.
 
 \subsection{Fault Tolerance}
 \label{sec:esboc-requirements-service-fault}
 The MicroProfile specifications provide the specification MicroProfile-Fault-Tolerance, which provides an API to define fault tolerance behavior such as retries, timeouts and error fall-backs. The fault tolerance of a service means that, if a depending service is not accessible at the time, a service must not fail immediately after the first try, but the service should retry to call the depending service for several times, and fail when all retries have failed. Such a behavior ensures that short timed communication errors, redeployments or overloads do not immediately cause a service to fail. The services must provide proper fault tolerance configuration and fall-back behavior to be able to recover from such errors in a proper manner. \cite{EclipseMicroprofileFault2018}.   
 
-\subsection{State Handling}
-\label{sec:esboc-requirements-service-state}
-The service will be stateless, so that the services can be scaled and any request be handled by any instance of the service. Additionally Blue-Green-Releases and Canary-Releases are easily possible with stateless services \cite{FowlerBlueGreenRelease2010, FowlerCanaryRelease2010}. Multiple instances of stateful service hosted on a PaaS platform are not flexible as stateless services, because sessions must stick to a particular service instance, and persistence volumes have to be shared between the service instances.  
-
 \subsection{API Management}
 \label{sec:esboc-requirements-service-api}
-The API management of a public API such as REST-API REST-Models ensure that the clients, using a public API, are not broken by changes made on that API. There are several opinions on how API management can be done. Swagger has become very popular for documenting REST-API, where the documentation can be used to generate clients, provide documentation for developers and to test the public API. The services must be capable of migrating their public API in a way that the clients are not broken by the change. The replaced API version must be supported as well as the new one, so that the client is not forced to modify its source code \cite{SmartBearSwagger2018}.
+The API management of a public API such as REST-API and REST-Models ensure that the clients, using a public API, are not broken by changes made on that API. There are several opinions on how API management can be done. Swagger has become very popular for documenting REST-API, where the documentation can be used to generate clients, provide documentation for developers and to test the public API. The services must be capable of migrating their public API in a way that the clients are not broken by made changes \cite{SmartBearSwagger2018}.
 
 \textbf{ADD resource which christoph found during liwestfsw research} 
+\newpage
 \section{Openshift Architecture}
 \label{sec:esboc-design-oc}
-Figure \vref{fig:esboc-design-openshift-project} illustrates the structure of the Openshift Project, as well as the service dependencies within the Openshift Project. As discussed in Section \vref{sec:paas-openshift}, Openshift isolates the namespaces, which are representing an Openshift Project. Therefore, the services within this Openshift Project, which are not exposed via an Openshift Route, are implicitly protected from external access from the Internet or services hosted in another Openshift Projects. The Openshift Project contains the service application, the database and the integration service, whereby the service application and the database would normally be located outside the Openshift Cluster. The service application has access to the Internet and will be accessed by the client from the Internet via its public address. The integration service and the database are not exposed to the Internet and can only be accessed within the Openshift Project by their service names.
+Figure \vref{fig:esboc-design-openshift-project} illustrates the structure of the Openshift Project, as well as the service dependencies within the Openshift Project. As discussed in Section \vref{sec:paas-openshift}, Openshift isolates the namespaces, by bringing in the concept of an Openshift Project. Services hosted in an Openshift Project which are not exposed via an Openshift Route, are implicitly protected from external access from the Internet or services hosted in other Openshift Projects. The Openshift Project will contain the Application Service, the Database Service and the Integration Service. The Application Service has access to the Internet and will be accessed by the Client from the Internet via its public address. The Integration Service and the Database Service are not exposed to the Internet and can only be accessed within the Openshift Project by their service names.
 
 \begin{figure}[htbp]
 	\centering
@@ -97,12 +77,10 @@ Figure \vref{fig:esboc-design-openshift-project} illustrates the structure of th
 
 \section{Openshift Requirements}
 \label{sec:esboc-requirements-oc}
-The implementation of the Openshift resources such as templates and scripts must be implemented under consideration of the principles of IaC, as discussed in Section \vref{sec:iac-principles}. Keeping to the principles of IaC will ensure, that the Openshift Project can effortlessly be recreated with a different configurations for the intended stages. This allows the developer for instance to implement integration tests, where service dependencies such as the database can be mocked or be replaced by a test database.
-
-\subsection{Openshift Project}
-\label{sec:esboc-requirements-oc-project}
-The Openshift Project will not only host the services, but will manages their configuration and secrets, which have been discussed in Section \vref{sec:caas-kubernetes-objects}. The separation of the service implementation from the configuration as well as the secrets, ensures that the configurations and secrets can be applied on a service without a new release, and that developers do not have to handle secrets anymore, which increases the security.
-
-\subsection{Monitoring}
-\label{sec:esboc-requirements-oc-monitoring}
-To be able to monitor the hosted services, the Openshift project must host two monitoring services, one for log aggregation, and another one for tracing aggregation. In a real world example, the log aggregation and tracing services would be located in another Openshift Project or outside the Openshift Cluster. 
+The implementation of the Openshift resources such as templates and scripts must be implemented under consideration of the principles of IaC, as discussed in Section \vref{sec:iac-principles}. Keeping to the principles of IaC will ensure, that the Openshift Project can effortlessly be reproduced with a different configuration.  
+\\ \\
+The Openshift Project will host the integration services and manage their configuration and secrets via Openshift ConfigMaps and Openshift Secrets, which have been discussed in Section \vref{sec:caas-kubernetes-objects}. The configurations and secrets are managed outside the microservice code bases and are provided by the hosting Openshift Project for a specific stage the Openshift Project represents. The configurations and secrets are supposed to be managed by operators and are only made available to the services during runtime.
+\\ \\
+The implemented microservices shall manage their integration into Openshift, by providing the necessary templates, whereby configurations and secrets are accessed by their predefined names and keys. The Openshift Project provides the referenced resource such as configurations and secrets. Configurations and secrets are managed on a single location by trusted persons, without the need of a developer to access secrets. 
+\\ \\
+Along with the integration services, the Openshift Project shall host a Tracing Service and a Logging Service as well, which collect the tracing and logging data provided by the integration services. These service will be used to monitor the integration services.
