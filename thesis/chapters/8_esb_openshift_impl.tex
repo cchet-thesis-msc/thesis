@@ -1,44 +1,45 @@
 \chapter{Implementation ESB in Openshift}
 \label{cha:esbi}
-This chapter will discuss the implementation of the prototype, which has been specified in Chapter \vref{cha:esboc}. The prototype is hosted in a single Openshift Project, where Openshift acts as the ESB, which provides features as discussed in Section \vref{sec:paas-openshift-project}. As discussed in Section \vref{sec:esb-liwest-esb}, an ESB application running in JBoss Fuse, runs in a single runtime environment, which hosts all of the service components. Therefore, the ESB can only be scaled vertically and the ESB represents a single point of failure. If the runtime environment fails, the whole ESB application fails.
+This chapter will discuss the implemented prototype, which has been designed in Chapter \vref{cha:esboc}. The implemented prototype uses a lot of technologies and specifications, which are beyond the scope of tis thesis, therefore this thesis will focus on the most important implementation parts. A focus will be set on the implementation of the aspects discussed in Section \vref{sec:esboc-aspects}, which ensure that a integration service can be managed properly in a Openshift Cluster. 
 \\ \\
-As the prototype illustrates, the ESB is now represented by Openshift, which acts now as the \mentionedtext{runtime environment} for the hosted services. But, Openshift is not the runtime environment anymore, but is the platform for the runtime environment of the hosted services. The hosted services are now running in Docker Containers as standalone applications. Horizontal scaling and the distribution of the services over multiple hosts are now possible. Section \vref{sec:esbi-openshift} will discuss the implementation of the Openshift Project hosting the prototype.
+The integration services are implemented as microservice, which run as standalone applications on the Openshift Cluster, with their own life cycle. The integration services communicate via REST with each other, whereby each service provides a proper managed public API. The code bases of the integration services are managed separately, which completely de-couples the integration service from each other.  
 \\ \\
-The services run as standalone applications on the ESB, with their own life cycle. But organizing the services separately, increases the development overhead compared to a monolithic ESB application. Within a monolithic code base redundancies can be avoided by extracting common code to a module, which can for instance be done with models and utilities. Changes made on the common source code will immediately affect all referencing source code. Independent services, which for instance communicate via REST, are completely decoupled from each other, where the REST-API is the only dependency of an service. Section \vref{sec:esbi-api} will discuss the importance of API-Management and will describe ways how to implement a REST-API migration.
+As the prototype illustrates, the ESB is now represented by Openshift, which acts as the platform for the hosted integration services. The hosted integration services are implemented as microservices and are running in Docker Containers as standalone applications. Horizontal scaling and the distribution of the services over multiple hosts are now possible. Section \vref{sec:esbi-openshift} will discuss the implemented Openshift resources, which are used to define and manage the Openshift Project.
+\\ \\
+Is is assumed, that the reader is familiar with Java Enterprise Development, Maven and microservices. The implemented prototype is available on Github \footnote{https://github.com/cchet-thesis-msc/prototype}. The repository contains a README file, which describes how to setup the prototype. 
 
-\section{Technology}
+\section{Microservice Technologies}
 \label{sec:esbi-technolody-fis}
-The following sections will give a brief introduction about the most important technologies used by the implemented services. Each implemented service use the same technologies and they are setup the same way, because no matter what the concrete purpose of the service is, they all have to be integrated and run the same way on Openshift.
+The following sections will give a brief introduction about the most important technologies used to implement the integration services. Each implemented service uses the same technologies and is build the same way, because no matter what the concrete purpose of the service is, they all have to be integrated and run the same way on a Openshift Cluster.
 
 \subsection{JBoss Fuse Integration Services 2.0}
 \label{sec:esbi-technology-fis}
-JBoss Fuse Integration Services 2.0 is a set of tooling for developing integration services for Openshift. It provides Docker Images for different frameworks such as Spring Boot, Karaf or Camel and the services are started via an Java-Agent such as Prometheus or Jolokia, which provide data for an integrated Java-Console in Openshift, which gives an deep insight into the running service \cite{Prometheus2018, Jolokia2018}.
+JBoss Fuse Integration Services 2.0 is a set of tooling for developing integration services running on a Openshift Cluster. It provides Openshift integrations for different frameworks such as Spring Boot, Karaf or Camel. The services are started via an Java-Agent such as Prometheus or Jolokia, which are used to monitor the service during runtime. Additionally to provided Openshift resources, a Maven Plugin is provided, which allows to interact with the Openshift Cluster during a Maven build. JBoss Fuse Integration Services 2.0 allows developers to interact with a Openshift Cluster in a way like developers did before with an application server \cite{Prometheus2018, Jolokia2018}.
 
 \subsection{Wildfly Swarm}
 \label{sec:esbi-technology-swarm}
-Wildly Swarm is the JEE answer to Spring Boot, and is an framework, which allows to package an application into an Uber-JAR. During the packaging, only those components of the Wildfly application server are packaged, which are referenced and needed by the application. The application can then be started via \inlineBash{java -jar app.jar}, whereby the contained Wildfly application server is bootstrapped programmatically.  The application deployment artifact is a JAVA Web-Archive, which could be hosted in any application server environment, which provides all of the referenced dependencies. 
+Wildly Swarm is the JEE answer to Spring Boot, and is a framework, which allows to package an application into an Uber-JAR. An Uber-JAR is a packaged standalone application, which can be started with the command \inlineJava{java -jar}. During the packaging, only those components of an application server are packaged, which are referenced and needed by the application. The application can then be started via \inlineBash{java -jar app.jar}, whereby the application server is bootstrapped programmatically.  The application deployment artifact is a JAVA Web-Archive, which could be hosted in any application server environment, which provides all of the referenced dependencies \cite{WildflySwarm2018}. 
 
 \subsection{Fabric8}
 \label{sec:esbi-technology-f8}
-Fabric8 is an open source project under the umbrella of RedHat, which is an integrated development platform for developing applications on Kubernetes. Fabric8 also provides a maven plugin, which focus on building Docker Images, managing Kubernetes or Openshift resources and deploying Java applications on Kubernetes or Openshift, and it is part of JBoss Fuse Integration Services 2.0.
+Fabric8 is an integrated development platform for developing applications on Kubernetes. Fabric8 provides the Maven Plugin for the JBoss Fuse Integration Services 2.0, and focuses on building Docker Images, managing Kubernetes or Openshift resources and deploying Java applications on Kubernetes or Openshift Clusters \cite{Fabric82018}.
+\\ \\
+The next Section will discuss the implementations of the microservice aspects discussed in Section \vref{sec:esboc-aspects}.
 
 \section{Security}
 \label{sec:esbi-security}
-The access to the integration service is secured with OAuth. Keycloak is used as the authentication service, which is a very popular open source identity and authentication application. Wildfly Swarm provides an integration into Keycloak via the Keycloak-Adapter, which only needs to be added as a dependency and configured.
-\\ \\
-The secrets needed by the services are managed in Openshift, and no developer has access to them. The developers only know the name of the used secret and its provided keys. The decoupling of the developers from the secrets in productive environments increases security. The secrets can be changed at any time, only a restart of the referencing services is required.
+The integration services are secured with OAuth, and authenticate their clients via Keycloak. Keycloak is used as the authentication service, and is a very popular open source identity and authentication application. Wildfly Swarm provides an integration into Keycloak via the Keycloak-Adapter, which only needs to be added as a dependency to the Maven POM and to be configured.
 
 \subsection{Service Implementation}
 \label{sec:esbi-security-service}
-This section will discuss the implementation of the security in the service implementations, whereby the implementation is represented by the in further discussed configurations. 
-
+This section will discuss the implementation of the security in the service implementations. Listing \vref{ls:esboi-security-pom} shows the dependency, which brings in the Keycloak Adapter, integrates itself into the Java Web-Security mechanisms, and can therefore be configured with Java Web-Security security constraints.
 \begin{listing}
 	\xmlFile{\sourceDir/maven-keycloak-swarm.xml}
 	\caption{Wildfly Swarm Keycloak dependency in pom.xml}
 	\label{ls:esboi-security-pom}
 \end{listing}
 
-Listing \vref{ls:esboi-security-pom} shows the dependency, which brings in the Keycloak Adapter, integrates itself into the Java Web-Security mechanisms, and can therefore be configured with Java Web-Security security constraints.
+Listing \vref{ls:esboi-security-yaml} shows an excerpt of the Wildfly Swarm configuration file project-stages.yml, which configures the security constraints for the REST-Endpoint.
 
 \begin{listing}
 	\yamlFile{\sourceDir/project-stages-security.yml}
@@ -46,9 +47,7 @@ Listing \vref{ls:esboi-security-pom} shows the dependency, which brings in the K
 	\label{ls:esboi-security-yaml}
 \end{listing}
 
-Listing \vref{ls:esboi-security-yaml} shows an excerpt of the Wildfly Swarm used project-stage.yml file, which configures the security constraints for the rest endpoint. The secrets consumed by the service are used the same way as non-sensitive configurations, which are discussed in Section \vref{sec:esbi-configuration}.
-\\ \\
-The following two listings are excerpts of the deployment.yml Openshift Template, which is managed in the service code base.
+The following two listings are excerpts of the deployment.yml Openshift Template, which is managed in the service code base. Listing \vref{ls:esboi-security-oc-deployment-volume-secret} shows the specification of the secret injection into a Docker Volume. The secrets are injected as files, whereby the file name represents the secret key and the file content represents the secret value. Therefore, that the secrets are managed externally, the developers need to provide the secret name for the service deployment configuration. In this case an expression is used, which can be replaced by Maven Properties, whereby the Maven Properties can be provided in the pom.xml or provided/overwritten by Java Options, during the build process.
 
 \begin{listing}
 	\yamlFile{\sourceDir/deployment-volume-secret.yml}
@@ -56,7 +55,7 @@ The following two listings are excerpts of the deployment.yml Openshift Template
 	\label{ls:esboi-security-oc-deployment-volume-secret}
 \end{listing}
 
-Listing \vref{ls:esboi-security-oc-deployment-volume-secret} shows the specification of the secret injection into a Docker Volume. The secrets get injected as files, whereby the file name represents the key and the content represents the value of the secret. Therefore, that the secrets are managed externally, the developers need to provide the secret name for the service deployment configuration. In this case an expression is sued, which can be replaced by Maven properties, whereby the Maven Properties can be provided in the pom.xml or provided/overwritten by Java Options, during the build process.
+Listing \vref{ls:esboi-security-oc-deployment-volume-mount} show the specification of the mount of the Docker Volume, which provides the secrets. The mount path is also represented by a Maven Property, because this path is also used in the project-stages.yml file, where it points to the service configuration source for the productive stage. The secrets consumed by the services are used the same way as non-sensitive configurations, which are discussed in Section \vref{sec:esbi-configuration}.
 
 \begin{listing}
 	\yamlFile{\sourceDir/deployment-volume-secret-container.yml}
@@ -64,11 +63,11 @@ Listing \vref{ls:esboi-security-oc-deployment-volume-secret} shows the specifica
 	\label{ls:esboi-security-oc-deployment-volume-mount}
 \end{listing}
 
-Listing \vref{ls:esboi-security-oc-deployment-volume-mount} show the specification of the mount of the Docker Volume, which provides the secrets. The mount path is also represented by a Maven Property, because this path is also used in the project-stages.yml file, where it points to the service configuration source for the productive stage. 
-
 \subsection{Openshift Implementation}
 \label{sec:esbi-security-openshift}
-This section will discuss the Openshift implementation, whereby the implementation is represented by a shell script, which manages the secrets. 
+This section will discuss the Openshift implementation, whereby the implementation is represented by a shell script, which manages the secrets. The secrets are managed outside the code bases of the integration services.
+\\ \\
+Listing \vref{ls:esboi-security-oc-secret} shows the Openshift CLI-Command, which is used to create the secrets. The secrets are consumed by the service application, which needs to perform authentication against the integration service and needs to know where the integration service and the authentication service are located. 
 
 \begin{listing}
 	\bashFile{\sourceDir/bash-oc-secret.txt}
@@ -76,11 +75,7 @@ This section will discuss the Openshift implementation, whereby the implementati
 	\label{ls:esboi-security-oc-secret}
 \end{listing}
 
-Listing \vref{ls:esboi-security-oc-secret} shows the Openshift CLI-Command, which is used to create the secrets. The secrets are consumed by the service application, which needs to perform authentication against the integration service and needs to know where the integration service and the authentication service are located. 
-\\ \\
-The next Section \vref{sec:esbi-configuration} will discuss the configuration of the service in an Openshift environment, which for this prototype represents the ESB. The usage of secrets is th same as the usage of configuration properties, because the only difference is the sensitivity of the data. The secrets which have been injected into the container, are read by the runtime configuration mechanism, which exposes them as configuration properties to the service implementation.
-
-\newpage
+The discussed implementations are the necessary implementations on the service and Openshift side, to secure services hosted on a Openshift Cluster. No infrastructure code is necessary, only configuration. The following section will discuss the configuration of the integration services, which can be applied to the security as well, because secrets in Openshift are used in the service implementation the same way as configuration parameters.
 
 \section{Configuration}
 \label{sec:esbi-configuration}
@@ -174,7 +169,7 @@ The Openshift implementation is already covered by Section \vref{sec:esbi-securi
 \subsection{Openshift Implementation}
 \label{sec:esbi-api-openshift}
 
-\section{Openshift}
+\section{Openshift Project}
 \label{sec:esbi-openshift}
 
 \subsection{Configuration}
