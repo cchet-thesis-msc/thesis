@@ -149,7 +149,7 @@ Listing \vref{ls:esboi-tracing-java} shows a class which is annotated with \inli
 	\label{ls:esboi-tracing-java}
 \end{listing}
 
-A trace is a set of so called spans, whereby a span represents one call in a call chain and contains meta-data of the call such as duration. The interceptor creates a new span for each call and appends the created span to an existing parent span, or the created span is the parent span. 
+A trace is a set of so called spans, whereby a span represents one call in a call chain and contains meta-data of the call such as call duration. The interceptor creates a new span for each call and appends the created span to an existing parent span, or the created span is the parent span. 
 
 \subsection{Openshift Implementation}
 \label{sec:esbi-tracing-openshift}
@@ -157,16 +157,59 @@ The communication between the integration services and tracing service is done v
 
 \section{Logging}
 \label{sec:esbi-logging}
-The integration services provide logging to a central logging service. Graylog\footnote{https://www.graylog.org/} is used as the logging service, which collects all logging data and provides a GUI for analyzing logs.
+The integration services provide logging to a central log aggregation service. Graylog\footnote{https://www.graylog.org/} is used as the log aggregation service, which collects all logging data and provides a GUI for analyzing logs.
+\newpage
 
 \subsection{Service Implementation}
 \label{sec:esbi-logging-service}
- 
+This section will discuss the implementation of the service logging. Listing \vref{ls:esboi-logging-pom} shows the dependencies, which bring in the logging implementations. SLF4J\footnote{https://www.slf4j.org/} has been chosen as the logging facade, whereby an integration in Wildfly Swarm used JBoss Logging is provided by SLF4J.
+
 \begin{listing}
 	\xmlFile{\sourceDir/maven-swarm-logging.xml}
 	\caption{Wildfly Swarm logging dependencies in pom.xml}
 	\label{ls:esboi-logging-pom}
 \end{listing}
+
+The following listings are part of the project-stages.yml configuration file and configure logging for different stages. Listing \vref{ls:esboi-logging-format-project-stages} shows the configuration of the logging format, which uses Mapped Diagnostic Context (MDC) parameters to mark a log entry with the transaction id. The configured formatter is used over all stages.
+
+\begin{listing}
+	\yamlFile{\sourceDir/project-stages-logging-format.yml}
+	\caption{Configuration of the logging format}
+	\label{ls:esboi-logging-format-project-stages}
+\end{listing}
+
+Listing \vref{ls:esboi-logging-dev-project-stages} shows the logging configuration for the development stage.
+
+\begin{listing}
+	\yamlFile{\sourceDir/project-stages-logging-dev.yml}
+	\caption{Configuration of the logging for development stage}
+	\label{ls:esboi-logging-dev-project-stages}
+\end{listing}
+
+Listing \vref{ls:esboi-logging-prod-project-stages} shows the configuration of the logging for the production stage, where the service is contributing its logs to a central log aggregation service. A Syslog logging handler is configured, which sends the logs to the log aggregation service via the SYSLOG\footnote{https://tools.ietf.org/html/rfc5424} protocol.
+
+\begin{listing}
+	\yamlFile{\sourceDir/project-stages-logging-prod.yml}
+	\caption{Configuration of the logging for production stage}
+	\label{ls:esboi-logging-prod-project-stages}
+\end{listing}
+
+Listing \vref{ls:esboi-logging-java-transaction-id} shows the implementation of the interface \mentionedtext{ContainerRequestFilter}, which is used to caputre the trace transaction id on a REST Endpoint. The implementation is depending on the Uber MicroProfile OpenTracing-API implementation, because the specification does not provide an transaction id yet.
+
+\begin{listing}
+	\javaFile{\sourceDir/java-logging-tracing-id.java}
+	\caption{Capture of tracing id on REST Endpoint}
+	\label{ls:esboi-logging-java-transaction-id}
+\end{listing} 
+
+Listing \vref{ls:esboi-logging-java-producer} shows the CDI Producer for the logger instance. The logger is produced for the Dependent Scope, which means that the producer method gets called for each injection point of each CDI Bean.
+
+\begin{listing}
+	\javaFile{\sourceDir/java-logging-producer.java}
+	\caption{Logging instance CDI Producer}
+	\label{ls:esboi-logging-java-producer}
+\end{listing} 
+
 
 \subsection{Openshift Implementation}
 \label{sec:esbi-logging-openshift}

@@ -1,0 +1,17 @@
+swarm:
+  logging:
+    custom-handlers:
+      SYSLOGGER:
+        named-formatter: "DEFAULT_LOG_PATTERN"
+        attribute-class: "org.jboss.logmanager.handlers.SyslogHandler"
+        module: "org.jboss.logmanager"
+        properties:
+          serverHostname: "graylog"
+          hostname: "${project.build.finalName}"
+          port: "10514"
+          protocol: "UDP"
+    root-logger:
+      level: "WARN"
+      handlers:
+        - "CONSOLE"
+        - "SYSLOGGER"
