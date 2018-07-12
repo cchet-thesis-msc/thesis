@@ -79,11 +79,11 @@ The discussed implementations are the necessary implementations on the Service a
 
 \section{Configuration}
 \label{sec:esbi-configuration}
-The integration services use the MicroProfile Config-API to be configurable for multiple stages by exposing all necessary configuration parameters and to be able to consume configuration parameters from different configuration sources via injection. Developers are bound to the configuration or secret name, keys and their value type, but developers are not bound to the configuration or secret source, which allows to provide configurations from different sources and for different stages. 
+The integration services use the MicroProfile Config specification to be configurable for multiple stages by exposing all necessary configuration parameters and to be able to consume configuration parameters from different configuration sources via injection. Developers are bound to the configuration or secret name, keys and their value type, but developers are not bound to the configuration or secret source, which allows to provide configurations from different sources and for different stages. 
 
 \subsection{Service Implementation}
 \label{sec:esbi-config-service}
-This section will discuss the implementation of the configuration definition and usage. Listing \vref{ls:esboi-config-pom} shows the dependency, which brings in the MicroProfile Config-API and implementations to enable injectable configurations.
+This section will discuss the implementation of the configuration definition and usage. Listing \vref{ls:esboi-config-pom} shows the dependency, which brings in the MicroProfile Config specification to enable injectable configurations.
  
 \begin{listing}
 	\xmlFile{\sourceDir/maven-microprofile-config.xml}
@@ -99,7 +99,7 @@ Listing \vref{ls:esboi-config-project-stages-dev} shows the definition of the co
 	\label{ls:esboi-config-project-stages-dev}
 \end{listing}
 
-Listing \vref{ls:esboi-config-project-stages-prod} shows the definition of the configuration source with the name \mentionedtext{app.secrets} for the production stage, whereby the configurations are loaded via a directory. The directory location is represented by an Maven Property, because its used in multiple configuration files, as already discussed in Section \vref{sec:esbi-security-service}. The MicroProfile Config-API and implementations will load files in this directory by using the filename as the key and the content as the value.
+Listing \vref{ls:esboi-config-project-stages-prod} shows the definition of the configuration source with the name \mentionedtext{app.secrets} for the production stage, whereby the configurations are loaded via a directory. The directory location is represented by an Maven Property, because its used in multiple configuration files, as already discussed in Section \vref{sec:esbi-security-service}. The MicroProfile Config specification will load files in this directory by using the filename as the key and the content as the value.
 
 \begin{listing}
 	\yamlFile{\sourceDir/project-stages-micro-config-prod.yml}
@@ -121,11 +121,11 @@ The Openshift implementation has already been covered by Section \vref{sec:esbi-
 
 \section{Tracing}
 \label{sec:esbi-tracing}
-The integration services use the MicroProfile OpenTracing-API to provide tracing data to a central tracing service. Jaeger\footnote{https://www.jaegertracing.io/} is used as the tracing service, which collects all tracing data and provides a GUI for analyzing traces. 
+The integration services use the MicroProfile OpenTracing specification to provide tracing data to a central tracing service. Jaeger\footnote{https://www.jaegertracing.io/} is used as the tracing service, which collects all tracing data and provides a GUI for analyzing traces. 
 
 \subsection{Service Implementation}
 \label{sec:esbi-tracing-service}
-This section will discuss the implementation of the service tracing. Listing \vref{ls:esboi-tracing-pom} shows the dependency, which brings in the MicroProfile OpenTracing-API and implementations to enable tracing. 
+This section will discuss the implementation of the service tracing. Listing \vref{ls:esboi-tracing-pom} shows the dependency, which brings in the MicroProfile OpenTracing specification to enable tracing. 
 
 \begin{listing}
 	\xmlFile{\sourceDir/maven-microprofile-opentracing.xml}
@@ -194,7 +194,7 @@ Listing \vref{ls:esboi-logging-prod-project-stages} shows the configuration of t
 	\label{ls:esboi-logging-prod-project-stages}
 \end{listing}
 
-Listing \vref{ls:esboi-logging-java-transaction-id} shows the implementation of the interface \mentionedtext{ContainerRequestFilter}, which is used to caputre the trace transaction id on a REST Endpoint. The implementation is depending on the Uber MicroProfile OpenTracing-API implementation, because the specification does not provide an transaction id yet.
+Listing \vref{ls:esboi-logging-java-transaction-id} shows the implementation of the interface \mentionedtext{ContainerRequestFilter}, which is used to caputre the trace transaction id on a REST Endpoint. The implementation is depending on the Uber MicroProfile OpenTracing specification, because the specification does not provide an transaction id yet.
 
 \begin{listing}
 	\javaFile{\sourceDir/java-logging-tracing-id.java}
@@ -202,26 +202,51 @@ Listing \vref{ls:esboi-logging-java-transaction-id} shows the implementation of 
 	\label{ls:esboi-logging-java-transaction-id}
 \end{listing} 
 
-Listing \vref{ls:esboi-logging-java-producer} shows the CDI Producer for the logger instance. The logger is produced for the Dependent Scope, which means that the producer method gets called for each injection point of each CDI Bean.
+Listing \vref{ls:esboi-logging-java-producer} shows the CDI Producer for the logger instance. The logger is produced for the Dependent Scope, which means that the life cycle of the logger is managed by the object, which gets the logger injected.
 
 \begin{listing}
 	\javaFile{\sourceDir/java-logging-producer.java}
-	\caption{Logging instance CDI Producer}
+	\caption{CDI Producer for loggers}
 	\label{ls:esboi-logging-java-producer}
 \end{listing} 
 
+Listing \vref{ls:esboi-logging-java} shows a class using a injected logger to log a info message. As this examples illustrates, the user codes has no knowledge about a log aggregation back-end, and uses the logger as usual.
+
+\begin{listing}
+	\javaFile{\sourceDir/java-logging.java}
+	\caption{Logger usage}
+	\label{ls:esboi-logging-java}
+\end{listing} 
 
 \subsection{Openshift Implementation}
 \label{sec:esbi-logging-openshift}
+The integration services send their logs to a central log aggregation service via the UDP protocol, and therefore there are no special settings for Openshift necessary. Nevertheless, logs send to the console are logged by Openshift and can be seen in the Openshift Web-Console.
 
 \section{Fault Tolerance}
 \label{sec:esbi-fault}
+The integration services use the MicroProfile FaultTolerance specification to define fault tolerance behavior on methods. As implementation for the MicroProfile FaultTolerance specification  Hystrix\footnote{https://github.com/Netflix/Hystrix/wiki/How-it-Works} is used, which has been contributed to the open source community by Netflix.
 
 \subsection{Service Implementation}
 \label{sec:esbi-fault-service}
+The integration services use the MicroProfile Fault-Tolerance specification to define the service fault tolerance behavior, which defines the service resilience. The following Listing \vref{ls:esboi-fault-tolerance-java} is one example of how to use the MicroProfile Fault-Tolerance specification.
+
+\begin{listing}
+	\xmlFile{\sourceDir/maven-microprofile-fault-tolerance.xml}
+	\caption{Wildfly Swarm fault tolerance dependencies in pom.xml}
+	\label{ls:esboi-fault-tolerance-pom}
+\end{listing}
+
+Listing \vref{ls:esboi-fault-tolerance-java} shows the CDI Producer method for producing the Keycloak token, which defines fault behavior for this method. The special use of the method as a CDI Producer method does not affect the fault tolerance logic. Each time when the producer method is called a token request is send to the Keycloak, to retrieve a access token. The invocation is retried 5 times with a 100 millisecond delay, and each invocation is timed out after 5 seconds.
+
+\begin{listing}
+	\javaFile{\sourceDir/java-fault-tolerance.java}
+	\caption{Fault tolerance definition on CDI Producer method}
+	\label{ls:esboi-fault-tolerance-java}
+\end{listing} 
 
 \subsection{Openshift Implementation}
 \label{sec:esbi-fault-openshift}
+The fault tolerance behavior as discussed in Section \vref{sec:esbi-fault-service} only affects the service itself and not Openshift. But, Openshift provides a kind of fault tolerance by for instance restarting a Pod which has crashed.
 
 \section{API Management}
 \label{sec:esbi-api}
