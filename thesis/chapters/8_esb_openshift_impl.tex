@@ -67,7 +67,7 @@ Listing \vref{ls:esboi-security-oc-deployment-volume-mount} show the specificati
 \label{sec:esbi-security-openshift}
 This section will discuss the Openshift implementation, whereby the implementation is represented by a shell script, which manages the secrets. The secrets are managed outside the code bases of the integration services.
 \\ \\
-Listing \vref{ls:esboi-security-oc-secret} shows the Openshift CLI-Command, which is used to create the secrets. The secrets are consumed by the service application, which needs to perform authentication against the integration service and needs to know where the integration service and the authentication service are located. 
+Listing \vref{ls:esboi-security-oc-secret} shows the Openshift CLI-Commands, which are used to create the secrets. The first command creates a secret from literal values which is used by a client service to retrieve authentication tokens. The second command creates a secret from a file, whereby the filename is the secret key and the content is the secret value, which is used by the Keycloak Adapter to validate authentication tokens provided by the clients. 
 
 \begin{listing}
 	\bashFile{\sourceDir/bash-oc-secret.txt}
@@ -75,41 +75,39 @@ Listing \vref{ls:esboi-security-oc-secret} shows the Openshift CLI-Command, whic
 	\label{ls:esboi-security-oc-secret}
 \end{listing}
 
-The discussed implementations are the necessary implementations on the service and Openshift side, to secure services hosted on a Openshift Cluster. No infrastructure code is necessary, only configuration. The following section will discuss the configuration of the integration services, which can be applied to the security as well, because secrets in Openshift are used in the service implementation the same way as configuration parameters.
+The discussed implementations are the necessary implementations on the Service and Openshift side, to secure services hosted on a Openshift Cluster. No infrastructure code is necessary, only configuration. The following section will discuss the configuration of the integration services, which can be applied to the security as well, because secrets in Openshift are used in the service implementations the same way as configuration parameters.
 
 \section{Configuration}
 \label{sec:esbi-configuration}
-The service uses the MicroProfile Config-API and the implementation provided by Wildfly Swarm to define used configuration source for the different stages and to inject configurations into service implementations. The developers are only bound to the usage, key and value type, but developers are not bound to the configuration source, which allows to provide the configurations from different sources for different stages. 
+The integration services use the MicroProfile Config-API to be configurable for multiple stages by exposing all necessary configuration parameters and to be able to consume configuration parameters from different configuration sources via injection. Developers are bound to the configuration or secret name, keys and their value type, but developers are not bound to the configuration or secret source, which allows to provide configurations from different sources and for different stages. 
 
 \subsection{Service Implementation}
 \label{sec:esbi-config-service}
-This section will discuss the service implementation of the usage of the MicroProfile Config-API, and of the configuration for the configuration source for the different stages.  
-
+This section will discuss the implementation of the configuration definition and usage. Listing \vref{ls:esboi-config-pom} shows the dependency, which brings in the MicroProfile Config-API and implementations to enable injectable configurations.
+ 
 \begin{listing}
 	\xmlFile{\sourceDir/maven-microprofile-config.xml}
 	\caption{Wildfly Swarm MicroProfile-Config dependency in pom.xml}
 	\label{ls:esboi-config-pom}
 \end{listing}
 
-Listing \vref{ls:esboi-config-pom} shows the Wildfly swarm MicroProfile-Config dependency, which brings in all needed integrations into Wildfly Swarm, so that developers can configure configuration sources and inject configuration properties.
+Listing \vref{ls:esboi-config-project-stages-dev} shows the definition of the configuration source with the name \mentionedtext{app.secrets} for the development stage, whereby the configuration properties are provided hard coded.
 
 \begin{listing}
 	\bashFile{\sourceDir/project-stages-micro-config-dev.yml}
-	\caption{Hard coded configuration for development}
+	\caption{Hard coded configuration for development stage}
 	\label{ls:esboi-config-project-stages-dev}
 \end{listing}
 
-Listing \vref{ls:esboi-config-project-stages-dev} shows the configuration of the configuration source with the name \mentionedtext{app.secrets} for the development stage, whereby the configuration properties are provided hard coded.
-\newpage
+Listing \vref{ls:esboi-config-project-stages-prod} shows the definition of the configuration source with the name \mentionedtext{app.secrets} for the production stage, whereby the configurations are loaded via a directory. The directory location is represented by an Maven Property, because its used in multiple configuration files, as already discussed in Section \vref{sec:esbi-security-service}. The MicroProfile Config-API and implementations will load files in this directory by using the filename as the key and the content as the value.
 
 \begin{listing}
 	\yamlFile{\sourceDir/project-stages-micro-config-prod.yml}
-	\caption{Hard coded configuration for production}
+	\caption{External configuration for production stage}
 	\label{ls:esboi-config-project-stages-prod}
 \end{listing}
 
-Listing \vref{ls:esboi-config-project-stages-prod} shows the configuration of the configuration source with the name \mentionedtext{app.secrets} for the production stage, whereby the configurations are loaded via a directory. The directory location is represented by an Maven Property, because its used in multiple configuration files, as already discussed in Section \vref{sec:esbi-security-service}.
-
+Listing \vref{ls:esboi-config-inject} shows the injection of the Keycloak Secrets into a CDI Bean, whereby the actual configuration source, the configurations are retrieved from, is unknown. The injected configuration properties are retrieved from a Openshift Secret, but are used in source code the same way as configurations. The Keycloak Secrets are used to retrieve authentication tokens for the REST calls. 
 
 \begin{listing}
 	\javaFile{\sourceDir/java-config-inject.java}
@@ -117,36 +115,58 @@ Listing \vref{ls:esboi-config-project-stages-prod} shows the configuration of th
 	\label{ls:esboi-config-inject}
 \end{listing}
 
-Listing \vref{ls:esboi-config-inject} shows the injection of the Keycloak secrets, which are used to retrieve an token for the token based authentication of the rest client calls. The configuration properties are actual secrets, which the developers does not see when injecting, it because the developers do not have access to the underlying configuration source.
-
 \subsection{Openshift Implementation}
 \label{sec:esbi-config-openshift}
-The Openshift implementation is already covered by Section \vref{sec:esbi-security-openshift}, because all of the configuration parameters are managed as secrets. 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-
-
-
-
-
+The Openshift implementation has already been covered by Section \vref{sec:esbi-security-openshift}, because configurations and secrets are injected into Docker Containers the same way, and the configuration shown in this section are actual retrieved from a Openshift Secret. 
 
 \section{Tracing}
 \label{sec:esbi-tracing}
+The integration services use the MicroProfile OpenTracing-API to provide tracing data to a central tracing service. Jaeger\footnote{https://www.jaegertracing.io/} is used as the tracing service, which collects all tracing data and provides a GUI for analyzing traces. 
 
 \subsection{Service Implementation}
 \label{sec:esbi-tracing-service}
+This section will discuss the implementation of the service tracing. Listing \vref{ls:esboi-tracing-pom} shows the dependency, which brings in the MicroProfile OpenTracing-API and implementations to enable tracing. 
+
+\begin{listing}
+	\xmlFile{\sourceDir/maven-microprofile-opentracing.xml}
+	\caption{Wildfly Swarm MicroProfile-OpenTracing dependency in pom.xml}
+	\label{ls:esboi-tracing-pom}
+\end{listing}
+
+Listing \vref{ls:esboi-tracing-project-stages} shows the configuration for the integration into an external tracing service, whereby the configuration parameters are provided by Maven Properties, environment variables and constants. The configuration properties are created as System Properties by Wildfly Swarm, whereby  expressions like \mentionedtext{\$\{env.JAEGER\_PORT\}} are resolved during startup.
+
+\begin{listing}
+	\yamlFile{\sourceDir/project-stages-opentracing.yml}
+	\caption{Configuration for integration into tracing service}
+	\label{ls:esboi-tracing-project-stages}
+\end{listing}
+
+Listing \vref{ls:esboi-tracing-java} shows a class which is annotated with \inlineJava{@Traced} on class level, which enables tracing for all methods within this class. The annotation \inlineJava{@Traced} enables an interceptor, which implements the tracing logic. 
+
+\begin{listing}
+	\javaFile{\sourceDir/java-tracing.java}
+	\caption{Enable tracing for a class}
+	\label{ls:esboi-tracing-java}
+\end{listing}
+
+A trace is a set of so called spans, whereby a span represents one call in a call chain and contains meta-data of the call such as duration. The interceptor creates a new span for each call and appends the created span to an existing parent span, or the created span is the parent span. 
 
 \subsection{Openshift Implementation}
 \label{sec:esbi-tracing-openshift}
+The communication between the integration services and tracing service is done via UDP protocol, and therefore Openshift does need any special configuration.
 
 \section{Logging}
 \label{sec:esbi-logging}
+The integration services provide logging to a central logging service. Graylog\footnote{https://www.graylog.org/} is used as the logging service, which collects all logging data and provides a GUI for analyzing logs.
 
 \subsection{Service Implementation}
 \label{sec:esbi-logging-service}
+ 
+\begin{listing}
+	\xmlFile{\sourceDir/maven-swarm-logging.xml}
+	\caption{Wildfly Swarm logging dependencies in pom.xml}
+	\label{ls:esboi-logging-pom}
+\end{listing}
 
 \subsection{Openshift Implementation}
 \label{sec:esbi-logging-openshift}
