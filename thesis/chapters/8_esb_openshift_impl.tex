@@ -248,11 +248,45 @@ Listing \vref{ls:esboi-fault-tolerance-java} shows the CDI Producer method for p
 \label{sec:esbi-fault-openshift}
 The fault tolerance behavior as discussed in Section \vref{sec:esbi-fault-service} only affects the service itself and not Openshift. But, Openshift provides a kind of fault tolerance by for instance restarting a Pod which has crashed.
 
-\section{API Management}
+\section{REST-API Management}
 \label{sec:esbi-api}
+The integration services use Swagger\footnote{https://swagger.io/} to provide documentation for their REST-API. Swagger provides an intermediate format which can be used by tooling for testing and client generation. The REST-API represents the public view of the service, which is implemented in a way, so that it is de-coupled from the Service-API, and supports several ways to perform API migrations.
 
 \subsection{Service Implementation}
 \label{sec:esbi-api-service}
+This section will discuss the implementation of the service REST-API implementation and management. Listing \vref{ls:esboi-api-service-pom} shows the dependency, which brings in the Swagger specification and implementation for an service which provides Swagger Documentation.
+
+\begin{listing}
+	\xmlFile{\sourceDir/maven-swagger-service.xml}
+	\caption{Wildfly Swarm Swagger dependency in pom.xml for the service}
+	\label{ls:esboi-api-service-pom}
+\end{listing}
+ 
+Listing \vref{ls:esboi-api-swagger-conf} shows the \mentionedtext{swarm.swagger.conf} configuration file, which configures Swagger for the documented service. Swagger will scan the configured packages for interfaces and classes, which provide Swagger Documentations, and during startup, Swagger will generate a \mentionedtext{swagger.json} files, which contains the Swagger specification of the REST-API documentation.   
+
+\begin{listing}
+	\yamlFile{\sourceDir/swarm.swagger.conf}
+	\caption{Swagger configuration}
+	\label{ls:esboi-api-swagger-conf}
+\end{listing}
+
+Listing \vref{ls:esboi-api-swagger-java} shows an interface, which is specifies an REST-Endpoint via JAX-RS Annotations, and provides Swagger documentation with Swagger annotations. Additionally, Java Bean-Validation annotations are used to define constraints for the input arguments of the REST operations, so that implicit validation is applied on all incoming requests. The JAX-RS, Java Bean-Validation and Swagger annotations are scanned and applied to the generated Swagger specification.
+
+\begin{listing}
+	\javaFile{\sourceDir/java-swagger.java}
+	\caption{Swagger documented REST-Interface}
+	\label{ls:esboi-api-swagger-java}
+\end{listing} 
+
+\subsection{Client Implementation}
+\label{sec:esbi-api-client}
+This section will discuss the implementation of the client, which uses the \mentionedtext{swagger.json} file for generating the REST-Client. Listing \vref{ls:esboi-api-client-pom} shows the dependencies, which bring in the Swagger specification and Maven Plugin, which is used to generate the REST-Client for the Client Service.
+
+\begin{listing}
+	\xmlFile{\sourceDir/maven-swagger-service.xml}
+	\caption{Wildfly Swarm Swagger dependency in pom.xml for the service}
+	\label{ls:esboi-api-client-pom}
+\end{listing}
 
 \subsection{Openshift Implementation}
 \label{sec:esbi-api-openshift}
