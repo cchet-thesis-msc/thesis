@@ -1,0 +1,21 @@
+<plugin>
+    <groupId>org.codehaus.mojo</groupId>
+    <artifactId>build-helper-maven-plugin</artifactId>
+    <version>${build-helper-maven-plugin.version}</version>
+    <executions>
+        <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+                <goal>add-source</goal>
+            </goals>
+            <configuration>
+                <sources>
+                    <source>
+                      ${target}/generated-sources/swagger/app-service/src
+                    </source>
+                </sources>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
