@@ -1,3 +1,7 @@
+GRAYLOG_HOST: "${env.GRAYLOG_HOST}"
+GRAYLOG_PORT: "${env.GRAYLOG_PORT}"
+GRAYLOG_PROT: "${env.GRAYLOG_PROT}"
+
 swarm:
   logging:
     custom-handlers:
@@ -6,12 +10,11 @@ swarm:
         attribute-class: "org.jboss.logmanager.handlers.SyslogHandler"
         module: "org.jboss.logmanager"
         properties:
-          serverHostname: "graylog"
+          serverHostname: "${GRAYLOG_HOST}"
+          port: "${GRAYLOG_PORT}"
+          protocol: "${GRAYLOG_PROT}"
           hostname: "${project.build.finalName}"
-          port: "10514"
-          protocol: "UDP"
     root-logger:
       level: "WARN"
       handlers:
-        - "CONSOLE"
         - "SYSLOGGER"

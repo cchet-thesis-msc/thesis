@@ -1,4 +1,4 @@
 <dependency>
-    <groupId>org.wildfly.swarm</groupId>
-    <artifactId>microprofile-fault-tolerance</artifactId>
+  <groupId>org.wildfly.swarm</groupId>
+  <artifactId>microprofile-fault-tolerance</artifactId>
 </dependency>

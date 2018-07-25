@@ -1,4 +1,4 @@
-@Produces   // CDI PRoducer
+@Produces   // CDI Producer
 @OAuthToken // CDI Qualifier
 @Dependent  // CDI Scope
 // Retries 5 times with 100ms delay on given exceptions

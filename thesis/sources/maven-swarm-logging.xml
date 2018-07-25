@@ -1,10 +1,9 @@
 <dependency>
-    <groupId>org.wildfly.swarm</groupId>
-    <artifactId>logging</artifactId>
+  <groupId>org.wildfly.swarm</groupId>
+  <artifactId>logging</artifactId>
 </dependency>
-
 <dependency>
-    <groupId>org.jboss.slf4j</groupId>
-    <artifactId>slf4j-jboss-logging</artifactId>
-    <version>${slf4j.jbopss-logging.version}</version>
+  <groupId>org.jboss.slf4j</groupId>
+  <artifactId>slf4j-jboss-logging</artifactId>
+  <version>${slf4j.jbopss-logging.version}</version>
 </dependency>

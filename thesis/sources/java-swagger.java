@@ -6,7 +6,7 @@ public interface ReportRestService {
     @Path("/generate")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Generates the report for the given customer",
+    @ApiOperation(value = "Generate report for the given customer id",
                   response = ReportModelDto.class)
     ReportModelDto generate(@QueryParam("id") @NotNull @Min(0) Long id);
 }
