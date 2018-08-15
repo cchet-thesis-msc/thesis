@@ -1,44 +1,54 @@
 \chapter{Discussion ESB in Openshift}
 \label{cha:esbd}
+This chapter will evaluate the implemented prototype of Chapter \vref{cha:esbi}, and will show that challenges such as
+\begin{itemize}
+	\item managing multiple environments,
+	\item managing multiple service versions,
+	\item managing public API migration,
+	\item managing adapters and transformers as services,
+	\item and managing service security
+\end{itemize}
+are manageable tasks when hosting an ESB in Openshift. 
 
-\section{Security}
-\label{sec:esbd-security}
+\section{Managing Multiple Environments}
+\label{sec:esbd-multiple-env}
+An ESB is commonly hosted on multiple environments, whereby at least one productive and one testing environment should be present. These environment where commonly a VM, which provides the runtime environment for the ESB. As the prototype shows, the environment is now represented by an Openshift Project, which can be reproduced easily via scripts as discussed in Section \vref{sec:esbi-openshift}. \\
 
-\subsection{Service}
-\label{sec:esbd-security-service}
+The services hosted on the ESB are using Fuse integration Service 2.0 and its provided tooling, which ensure that the service are properly encapsulated in a container and properly managed in Openshift. Therefore, the service developers provide the necessary Openshift Templates, which has the effect that the operators have no interaction with the service artifacts and runtime environments anymore. Operator have only to manage
+\begin{itemize}
+	\item the Openshift Project, which hosts the services,
+	\item the Openshift ConfigMaps, which hold the service non-sensitive configuration,
+	\item the Openshift Secrets, which hold the sensitive service configuration,
+	\item and scripts for utility such as backup/restore of service data or instance scaling.
+\end{itemize} 
+Listing \vref{ls:esboi-config-project-stages-prod} shows how developers reference Openshift Objects such as Openshift ConfigMaps and Openshift Secrets, which are managed by operators. 
 
-\subsection{Openshift Project}
-\label{sec:esbd-security-openshift}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[scale=1]{images/esbd-multi-stage-env.pdf}
+	\caption{Management and provisioning of multiple environments}
+	\label{fig:esbd-multi-stage-env}
+\end{figure}
 
-\section{Multistage Configurations}
-\label{sec:esbd-service-config}
+Figure \vref{fig:esbd-multi-stage-env} illustrates the management and provisioning of multiple environments for an ESB, whereby the hosting environment is represented by an Openshift Project. The \mentionedtext{Management Server} pulls the scripts and Openshift Templates from a \mentionedtext{VCS Server} and the configurations from a \mentionedtext{Configuration Server}. The scripts and Openshift Templates are separated from the configurations, which are actually providing the data for the scripts and Openshift Template-Parameters. With such an approach, the infrastructure becomes reproducible, versioned, and therefore consistent, and disposable. These characteristics are also principles of IaC, which have already been discussed in Chapter \vref{cha:iac}. \\
 
-\subsection{Service}
-\label{sec:esbd-config-service}
+The schema of Figure \vref{fig:esbd-multi-stage-env} is similar to the Figure \vref{fig:reproduce-infrastructure}, which illustrated how a system can be reproduced with parametrized templates and an IaC tool. The Openshift CLI provides functionality to manage Openshift Objects, which is what needs to be done when providing an environment in form of an Openshift Project, therefore the Openshift CLI acts as an IaC tool. 
 
-\subsection{Openshift Project}
-\label{sec:esbd-config-openshift}
 
-\section{Versioning}
-\label{sec:esbd-versioning}
 
-\subsection{Service}
-\label{sec:esbd-versioning-service}
+%fig:reproduce-infrastructure
 
-\subsection{Openshift Project}
-\label{sec:esbd-versioning-openshift}
+\section{Managing Multiple Service Versions}
+\label{sec:esbd-multi-version-service}
 
-\section{Resources}
-\label{sec:esbd-resources}
+\section{Managing Migration of Public API}
+\label{sec:esbd-multi-stage-env}
 
-\subsection{Service}
-\label{sec:esbd-resources-service}
+\section{Managing Adapters and Transformers as Services}
+\label{sec:esbd-adap-trans-service}
 
-\subsection{Openshift Cluster}
-\label{sec:esbd-resources-openshift}
-
-\section{Transformer and Adapter as Services}
-\label{sec:esbd-service-tranformer-adapter}
+\section{Managing Service Security}
+\label{sec:esbd-service-security}
 
 \section{Further Work}
 \label{sec:esbd-furhter-work}
