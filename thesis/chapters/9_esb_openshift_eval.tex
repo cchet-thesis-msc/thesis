@@ -3,10 +3,10 @@
 This chapter will evaluate the implemented prototype of Chapter \vref{cha:esbi}, and will show that challenges such as
 \begin{itemize}
 	\item managing multiple environments,
+	\item managing service security,
 	\item managing multiple service versions,
 	\item managing public API migration,
-	\item managing adapters and transformers as services,
-	\item and managing service security
+	\item and managing adapters and transformers as services
 \end{itemize}
 are manageable tasks when hosting an ESB in Openshift. Whenever possible, Openshift will be compared to JBoss EAP, which is used as the platform for ESB middleware as discussed in Section \vref{fig:esb-software-architecture}.
 
@@ -37,7 +37,7 @@ The scripts and Openshift Templates are separated from the configurations, which
 
 The interaction of the \mentionedtext{Management Server, VCS Server} and \mentionedtext{Configuration Server} as illustrated in Figure \vref{fig:esbd-multi-stage-env}, is similar to the Figure \vref{fig:reproduce-infrastructure}, which illustrated how a system can be reproduced with parametrized templates and an IaC tool. The Openshift CLI provides functionality to manage Openshift Objects, which is what needs to be done when providing an environment in form of an Openshift Project, therefore the Openshift CLI acts as an IaC tool.  \\
 
-The Feature Table \vref{tab:esbd-multi-stage-env} illustrates what mechanisms Openshift and JBoss EAP contain to provide the listed features. As illustrated in the table, Openshift provides \mentionedtext{Networking} and \mentionedtext{Isolation} features, which are provided to JBoss EAP by its hosting environment, such as a VM. Except of the \mentionedtext{Networking} and \mentionedtext{Isolation} feature, JBoss EAP supports all other features either natively or by supporting a third party framework. Nevertheless, Openshift combines all features in one platform, and makes them easy manageable via Openshift Templates and the Openshift CLI.
+Table \vref{tab:esbd-multi-stage-env} illustrates what mechanisms Openshift and JBoss EAP contain to provide the listed infrastructure features. As illustrated in Table \vref{tab:esbd-multi-stage-env}, Openshift provides \mentionedtext{Networking} and \mentionedtext{Isolation} features, which are provided to JBoss EAP by its hosting environment, such as a VM. Except of the \mentionedtext{Networking} and \mentionedtext{Isolation} feature, JBoss EAP supports all other features either natively or by supporting a third party framework. Nevertheless, Openshift combines all features in one platform, and makes them easy manageable via Openshift Templates and the Openshift CLI.
 
 {\renewcommand{\arraystretch}{1.2}%
 \begin{table}[h]
@@ -47,23 +47,64 @@ The Feature Table \vref{tab:esbd-multi-stage-env} illustrates what mechanisms Op
 	  \textit{Management}               & Openshift CLI           & JBoss CLI \\
 	                                    & Openshift Web-Console   & JBoss Web-Console \\
 	                                    & Openshift REST-API      & \\  \hline
-	  \textit{Networking}               & Openshift Project-Network & none (VM) \\
+	  \textit{Networking}               & Openshift Project       & None (VM) \\
 	                                    & Openshift Service       & \\  
 	                                    & Openshift Route         & \\  \hline
-	  \textit{Isolation}                & Openshift Project       & none (VM) \\  \hline
+	                                    & Openshift Router        & \\  \hline
+	  \textit{Isolation}                & Openshift Project       & None (VM) \\  \hline
 	  \textit{Configuration/Secrets}    & Openshift ConfigMaps    & Java System Properties  \\
 	                                    & Openshift Secrets       & Environment variables \\
 	                                                             && Password Vault \\  \hline
 	  \textit{Service Distribution}     & Openshift Worker-Node   & Single JVM \\ 
 			                                                     && Karaf \\  
 			                                                     && OSGI \\  \hline
-	  \textit{Roll-out}                 & Recreate                & Framework dependent, \\ 
+	  \textit{Service Roll-out}         & Recreate                & Framework dependent, \\ 
 			                            & Rolling                 & normally recreate \\
 			                            & Blue/Green              & \\  \hline
 	\end{tabularx}
-	\caption{Feature comparison between Openshift and JBoss EAP}
+	\caption{Infrastructure feature comparison}
 	\label{tab:esbd-multi-stage-env}
 \end{table}}
+
+Openshift runs Docker Containers, and therefore the programming language, the service was implemented with, does not matter, because the Docker Container provides the runtime environment for the application. Also services hosted on PaaS platforms communicate via standard Protocols such as Http, which are commonly supported by almost any programming language. JBoss EAP on the contrary, runs only Java applications. \\ 
+
+The next section will discuss the service security within an Openshift Project, which can be managed as discussed in this section. Additionally to the by the Openshift design provided security, the \mentionedtext{Management Server} of Figure \vref{fig:esbd-multi-stage-env} could also manage custom security configurations, which can be managed via the Openshift CLI as well. 
+
+\section{Managing Service Security}
+\label{sec:esbd-service-security}
+With a common ESB middleware, the services are protected by running within a single runtime environment or by security features provided by an supported third party framework like Karaf. In an Openshift Project, the services are implicitly protected by being isolated in a Kubernetes Namespace as discussed in Section \vref{sec:paas-openshift-project}, which can not be accessed by other Openshift Projects without additional configuration.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[scale=1]{images/esbd-service-security.pdf}
+	\caption{Service security in an Openshift Project}
+	\label{fig:esbd-service-security}
+\end{figure}
+\ \\
+Figure \vref{fig:esbd-service-security} illustrates an example, similar to the implemented prototype, where two Openshift Projects host the same services and where the Pod Networks of the two Openshift Projects are joined. The illlustrated configured joined Pod Networks allow services hosted in project \mentionedtext{PROJ\_PROD\_2} to access services hosted in project \mentionedtext{PROJ\_PROD\_1}. The default is, that all Openshift Projects are isolated. This kind of configuration is performed by Openshift Cluster-Administrators, and cannot be performed by developers. \\
+
+Additionally to the isolation of the services within the Openshift Project, the \mentionedtext{Integration Services} are secured via OAuth2, whereby the resource access is controlled by a central \mentionedtext{Single-Sign-On Server (SSO Server)}. On the one hand the services are isolated within a Kubernetes Namespace, and on the other hand, additional security such as resource access control can provided by the service itself as discussed in Section \vref{sec:esbi-security}. It is not meant to isolate services from each other within an Openshift Project, because an Openshift Project or a Kubernetes Namespace should contain a set of service, which do not have to be isolated from each other. \\
+
+Table \vref{tab:esbd-service-security} illustrates what mechanism Openshift and JBoss EAP contain to provide the listed security features. As illustrated in Table \vref{tab:esbd-service-security}, Openshift does not provide any support for access control on the service level, which is normal for an PaaS platform such as Openshift. The services running in Docker Containers on an Openshift Cluster have to implement access control or have to use third party frameworks such as Wildfly Swarm, which provide access control features as discussed in Section \vref{sec:esbi-security}. JBoss EAP on the other hand is a Java Application-Server, which provides support for resource access or user control for several common providers. 
+
+{\renewcommand{\arraystretch}{1.2}%
+	\begin{table}[h]
+		\begin{tabularx}{\textwidth}{ X|c|c }	
+			\textbf{Feature}                 & \textbf{Openshift}      & \textbf{JBoss EAP} \\  \hline
+			\textit{Network Isolation}       & Openshift Project       & none (VM) \\  \hline
+			\textit{HTTPS}                   & Openshift Router        & Reverse Proxy \\
+			                                 & Openshift Route         & Endpoint Configuration \\  \hline
+            \textit{Access Control}          & None (external)         & Endpoint Configuration \\
+                                                                      && Internal User-Database \\ 
+                                                                      && External User-Database \\  \hline
+            \textit{Single-Sign-On}          & None (external)         & Endpoint Configuration \\
+                                                                      && Several SSO providers \\  \hline
+		\end{tabularx}
+		\caption{Security feature comparison}
+		\label{tab:esbd-service-security}
+\end{table}}
+
+Openshift does not provide access control features to secure service resources, but provides security features such as user/group/role management, project permission management, Pod Network management, or quota management for Openshift Objects such as Replication Controllers. The security is applied to the services in an ambient way, whereby the services for instance don't have to support HTTPS anymore, because within an Pod Network there is no need for additional security and exposed services have an Openshift Route, which acts as the reverse proxy for the service, which handles security. All Openshift security configurations outside the scope of an Openshift Project can only be performed by Openshift Cluster-Administrators. 
 
 \section{Managing Multiple Service Versions}
 \label{sec:esbd-multi-version-service}
@@ -75,8 +116,6 @@ The Feature Table \vref{tab:esbd-multi-stage-env} illustrates what mechanisms Op
 \section{Managing Adapters and Transformers as Services}
 \label{sec:esbd-adap-trans-service}
 
-\section{Managing Service Security}
-\label{sec:esbd-service-security}
 
 \section{Further Work}
 \label{sec:esbd-furhter-work}
