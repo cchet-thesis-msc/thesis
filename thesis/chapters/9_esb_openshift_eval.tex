@@ -47,11 +47,11 @@ Table \vref{tab:esbd-multi-stage-env} illustrates what mechanisms Openshift and 
 	  \textit{Management}               & Openshift CLI           & JBoss CLI \\
 	                                    & Openshift Web-Console   & JBoss Web-Console \\
 	                                    & Openshift REST-API      & \\  \hline
-	  \textit{Networking}               & Openshift Project       & None (VM) \\
+	  \textit{Networking}               & Openshift Project       & None (external) \\
 	                                    & Openshift Service       & \\  
 	                                    & Openshift Route         & \\  \hline
 	                                    & Openshift Router        & \\  \hline
-	  \textit{Isolation}                & Openshift Project       & None (VM) \\  \hline
+	  \textit{Isolation}                & Openshift Project       & None (external) \\  \hline
 	  \textit{Configuration/Secrets}    & Openshift ConfigMaps    & Java System Properties  \\
 	                                    & Openshift Secrets       & Environment variables \\
 	                                                             && Password Vault \\  \hline
@@ -60,7 +60,6 @@ Table \vref{tab:esbd-multi-stage-env} illustrates what mechanisms Openshift and 
 			                                                     && OSGI \\  \hline
 	  \textit{Service Roll-out}         & Recreate                & Framework dependent, \\ 
 			                            & Rolling                 & normally recreate \\
-			                            & Blue/Green              & \\  \hline
 	\end{tabularx}
 	\caption{Infrastructure feature comparison}
 	\label{tab:esbd-multi-stage-env}
@@ -91,7 +90,7 @@ Table \vref{tab:esbd-service-security} illustrates what mechanism Openshift and 
 	\begin{table}[h]
 		\begin{tabularx}{\textwidth}{ X|c|c }	
 			\textbf{Feature}                 & \textbf{Openshift}      & \textbf{JBoss EAP} \\  \hline
-			\textit{Network Isolation}       & Openshift Project       & none (VM) \\  \hline
+			\textit{Network Isolation}       & Openshift Project       & None (VM) \\  \hline
 			\textit{HTTPS}                   & Openshift Router        & Reverse Proxy \\
 			                                 & Openshift Route         & Endpoint Configuration \\  \hline
             \textit{Access Control}          & None (external)         & Endpoint Configuration \\
@@ -105,10 +104,42 @@ Table \vref{tab:esbd-service-security} illustrates what mechanism Openshift and 
 \end{table}}
 
 Openshift does not provide access control features to secure service resources, but provides security features such as user/group/role management, project permission management, Pod Network management, or quota management for Openshift Objects such as Replication Controllers. The security is applied to the services in an ambient way, whereby the services for instance don't have to support HTTPS anymore, because within an Pod Network there is no need for additional security and exposed services have an Openshift Route, which acts as the reverse proxy for the service, which handles security. All Openshift security configurations outside the scope of an Openshift Project can only be performed by Openshift Cluster-Administrators. 
+\newpage
 
 \section{Managing Multiple Service Versions}
 \label{sec:esbd-multi-version-service}
+Sometimes it is necessary to run multiple versions of a service, for instance if a new version is released or if a consumer is not capable of migrating to the new version but provides a significant business value for the enterprise. The Openshift Platform provides mechanisms to run multiple versions of a service in several ways. Figure \vref{fig:esbd-service-multiple-versions} illustrates some scenarios for running multiple service versions on Openshift, whereby the illustrated scenarios of \mentionedtext{PROJ\_1} and \mentionedtext{PROJ\_2} are possible, because the old service version is N-1 compatible. N-1 compatibility means, that the service in the old version is capable of reading data written by the service in the new version. \\
 
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[scale=1]{images/esbd-service-multiple-versions.pdf}
+	\caption{Running multiple service versions on Openshift}
+	\label{fig:esbd-service-multiple-versions}
+\end{figure}
+\ \\
+\emph{PROJ\_1} of Figure \vref{fig:esbd-service-multiple-versions} illustrates an A/B Release, which is used to run the old and new version of a service in parallel, whereby a portion of the service consumers get access to the new version, while the rest of the service consumers are still using the old version. A/B Releases are used to validate the new version in the productive environment, before fully releasing it to all consumers. In this scenario, the requests are load balanced with the defined weightings, to either the new or old service version. \\ 
+
+\emph{PROJ\_2} of Figure \vref{fig:esbd-service-multiple-versions} illustrates a Blue/Green Release, which is used to run the old and the new version of a service in parallel, whereby the Openshift Route switches between the old and new service version. In this scenario, all service consumer access the same service version, which is currently accessible by the Openshift Route. \\
+
+\emph{PROJ\_3} of Figure \vref{fig:esbd-service-multiple-versions} illustrates two service versions running completely separated in parallel, whereby both versions are accessible via their own Openshift Route. This scenario is not a release scenario, and should be used if multiple service versions have to be provided outside of the scope of a release. \\
+
+Table \vref{tab:esbd-service-multiple-versions} illustrates what mechanism Openshift and JBoss EAP contain to provide the listed release features. Multiple service versions on Openshift are represented by separate Openshift Service objects, whereby with JBoss EAP, multiple service versions are either represented by separate JBoss EAP instances or deployment contexts on a single JBoss EAP instance.
+
+{\renewcommand{\arraystretch}{1.2}%
+ \newcolumntype{m}{>{\hsize=.32\hsize}X}%
+	\begin{table}[h]
+		\begin{tabularx}{\textwidth}{ m|c|c }	
+			\textbf{Feature}                  & \textbf{Openshift}      & \textbf{JBoss EAP} \\  \hline
+			\textit{Running multiple Versions}& Openshift Service       & Multiple EAP instances \\
+																	   && Multiple deployment contexts \\ \hline
+			\textit{Weighted Routing}         & Openshift Route         & None (external Proxy) \\  \hline
+			\textit{Version Switch}           & Openshift Route         & None (external Proxy) \\  \hline
+		\end{tabularx}
+		\caption{Release feature comparison}
+		\label{tab:esbd-service-multiple-versions}
+\end{table}}
+
+JBoss EAP is an application platform for Java applications and does provide an runtime environment but no networking features as shown in Table \vref{tab:esbd-multi-stage-env}, and therefore no routing features. JBoss EAP can be configured to act as a reverse proxy, but cannot act as the reverse proxy for applications hosted on the same JBoss EAP instance. 
 
 \section{Managing Migration of Public API}
 \label{sec:esbd-multi-stage-env}
