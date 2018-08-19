@@ -6,7 +6,7 @@ This chapter will evaluate the implemented prototype of Chapter \vref{cha:esbi},
 	\item managing service security,
 	\item managing multiple service versions,
 	\item managing public API migration,
-	\item and managing adapters and transformers as services
+	\item and managing Adapters and Message Translators as services
 \end{itemize}
 are manageable tasks when hosting an ESB in Openshift. Whenever possible, Openshift will be compared to JBoss EAP, which is used as the platform for ESB middleware as discussed in Section \vref{fig:esb-software-architecture}.
 
@@ -208,9 +208,26 @@ The easiest way to manage multiple versions of a public API is Path Versioning, 
 		\caption{Pros and Cons of Path Versioning}
 		\label{tab:esbd-service-api-path}
 \end{table}}
+\ \\
+The prototype uses Swagger for documenting the services public API, as discussed in Section \vref{sec:esbi-api}, whereby Swagger is used to generate the Swagger Specification, but the API migrations will have to be done as discussed in the former sections. On advantage of a Swagger generated client, is that developers work with a generated class or interface, and therefore developers work with a typed client, which will cause compile errors on breaking API changes. If the API and its used models would be implemented by hand, then developers will have to manually keep the implemented public API in sync with the currently used version.
 
-\section{Managing Adapters and Transformers as Services}
+\section{Managing Adapters and Message Translator as Services}
 \label{sec:esbd-adap-trans-service}
+Adapters and Transformers are part of the Enterprise Integration Patterns, whereby the Adapter is used couple an application to a message bus, and the Transformer is used to transform message from the application supported format to the message bus supported format and visa versa. The Adapter and Message Translator can be either located at the external service or can be located in the messaging system, the external service connects to. \\
+
+Commonly, a message bus system is implemented to use one form of communication, such as REST. If external services need to access the message bus, but don't support the message bus protocol, then Adapters and Message Translators are needed, to connect the external service to the message bus. 
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[scale=1]{images/esbd-service-adapter.pdf}
+	\caption{External Services connected via Adapter}
+	\label{fig:esbd-service-adapter}
+\end{figure}
+\ \\
+Figure \vref{fig:esbd-service-adapter} illustrates how the prototype could be integrated with external applications via an Adapter and Message Translator. If the Adapter and Message Translator are located at the external service, then the Adapter and Message Translator have to be provided in the programming languages, the external services use. If the Adapter and Message Translator are located in the Openshift Project, then they can be implemented in the programming language of choice. \\
+
+The Adapter and Message Translator have to be implemented as a standalone application (microservice), which for instance can be realized in Java with the Camel framework, which provides an API for implementing Enterprise integration Patterns, and is capable of running as a standalone application. \\
+
 
 
 \section{Further Work}
