@@ -41,7 +41,7 @@ Table \vref{tab:esbd-multi-stage-env} illustrates what mechanisms Openshift and 
 
 {\renewcommand{\arraystretch}{1.2}%
 \begin{table}[h]
-	\begin{tabularx}{\textwidth}{ X|c|c }	
+	\begin{tabularx}{\textwidth}{ X|X|X }	
 	  \textbf{Feature}              & \textbf{Openshift}      & \textbf{JBoss EAP} \\  \hline
 	  \textit{Staging}                  & Openshift Project       & Server Instance \\  \hline
 	  \textit{Management}               & Openshift CLI           & JBoss CLI \\
@@ -88,7 +88,7 @@ Table \vref{tab:esbd-service-security} illustrates what mechanism Openshift and 
 
 {\renewcommand{\arraystretch}{1.2}%
 	\begin{table}[h]
-		\begin{tabularx}{\textwidth}{ X|c|c }	
+		\begin{tabularx}{\textwidth}{ X|X|X }	
 			\textbf{Feature}                 & \textbf{Openshift}      & \textbf{JBoss EAP} \\  \hline
 			\textit{Network Isolation}       & Openshift Project       & None (VM) \\  \hline
 			\textit{HTTPS}                   & Openshift Router        & Reverse Proxy \\
@@ -128,21 +128,86 @@ Table \vref{tab:esbd-service-multiple-versions} illustrates what mechanism Opens
 {\renewcommand{\arraystretch}{1.2}%
  \newcolumntype{m}{>{\hsize=.32\hsize}X}%
 	\begin{table}[h]
-		\begin{tabularx}{\textwidth}{ m|c|c }	
+		\begin{tabularx}{\textwidth}{ X|X|X }	
 			\textbf{Feature}                  & \textbf{Openshift}      & \textbf{JBoss EAP} \\  \hline
-			\textit{Running multiple Versions}& Openshift Service       & Multiple EAP instances \\
+			\textit{Multiple Service Versions}& Openshift Service       & Multiple EAP instances \\
 																	   && Multiple deployment contexts \\ \hline
-			\textit{Weighted Routing}         & Openshift Route         & None (external Proxy) \\  \hline
-			\textit{Version Switch}           & Openshift Route         & None (external Proxy) \\  \hline
+			\textit{Weighted Routing}         & Openshift Route         & None (external) \\  \hline
+			\textit{Version Switch}           & Openshift Route         & None (external) \\  \hline
 		\end{tabularx}
 		\caption{Release feature comparison}
 		\label{tab:esbd-service-multiple-versions}
 \end{table}}
 
-JBoss EAP is an application platform for Java applications and does provide an runtime environment but no networking features as shown in Table \vref{tab:esbd-multi-stage-env}, and therefore no routing features. JBoss EAP can be configured to act as a reverse proxy, but cannot act as the reverse proxy for applications hosted on the same JBoss EAP instance. 
+JBoss EAP is an application platform for Java applications, which provides an runtime environment for applications but no networking features as shown in Table \vref{tab:esbd-multi-stage-env}, and therefore no routing feature. JBoss EAP can be configured to act as a reverse proxy, but cannot act as the reverse proxy for applications hosted on the same JBoss EAP instance. \\
+
+As Figure \vref{fig:esbd-service-multiple-versions} illustrates, the implemented prototype can run multiple versions of the hosted services, and supports the implementation of release models such as A/B or Blue/Green Releases. nt release models.
+\newpage
 
 \section{Managing Migration of Public API}
 \label{sec:esbd-multi-stage-env}
+This section will discuss the management of services public API, which is crucial when it comes to distributed services. Changes made on the public API of a service can break the functionality of an application the service is part of, or break the functionality of an external application, which depends on this service. The public API is the API the service exposes, which could only be consumed by internal consumers, but has to be managed the same way as the API would be exposed to external consumers. There are several ways to migrate a public API, whereby some of them will be discussed in this section. \\  
+
+Services running on Openshift are completely separated from each and have their own life-cycle, therefore they have to provide a public API, which can be consumed by other services. The public API has to be designed properly in the first place, as well as the management of its migrations. At least, the last both versions will have to be supported, to give the developers of the consuming services enough time to apply to the migrations of the public API. Commonly a service has two versions, on the one hand the service release version and on the other hand the service API version, which is allowed to remain the same over multiple service releases. \\
+
+The following sections will discuss the different ways to version the public API of a service.
+
+\mysubsubsection{Query Parameter-Versioning}
+Multiple versions of a public API can be managed via a Query-Parameter, whereby the Query-Parameter defines the version to use of a single API Operation. The URL \inlineBash{http://localhost/api/users?version=2} illustrates how to access a specific version of an API Operation via a HTTP Query-Parameter. The following Table \vref{tab:esbd-service-api-query-param} shows the Pros and Cons of API Versioning with HTTP Query-Parameters.
+
+{\renewcommand{\arraystretch}{1.2}%
+	\begin{table}[h]
+		\begin{tabularx}{\textwidth}{ X|X }	
+			\textbf{Pros}                 & \textbf{Cons}    \\  \hline
+			Single resource address       & Data and control parameters are mixed     \\  
+			Supported by all browsers     & Version as data parameter not possible     \\
+			Easy to understand            & No declarative mapping with JAX-RS     \\
+			Easy to implement             & \\ \hline
+		\end{tabularx}
+		\caption{Pros and Cons of HTTP Query-Parameter Versioning}
+		\label{tab:esbd-service-api-query-param}
+\end{table}}
+
+\mysubsubsection{HTTP Header Versioning}
+Multiple version of a public API can be managed via HTTP Headers in the following listed ways:
+\begin{itemize}
+	\item New HTTP Header \\
+	e.g. \inlineBash{Version: 2}
+	\item Additional field in the Accept-Header \\
+	e.g. \inlineBash{Accept: application/json; version=2}
+	\item Enhanced Media-Type \\
+	e.g. \inlineBash{Accept: application/vnd.app.model.v1+json;qs=0.9}
+\end{itemize}
+\ \\
+The approach of HTTP Header Versioning brings in more flexibility, but also makes the API Versioning more complex for developers to implement and harder to understand for consumers. The following Table \vref{tab:esbd-service-api-http-header} shows the Pros and Cons of API Versioning with HTTP Headers.
+
+{\renewcommand{\arraystretch}{1.2}%
+	\begin{table}[h]
+		\begin{tabularx}{\textwidth}{ X|X }	
+			\textbf{Pros}                         & \textbf{Cons}    \\  \hline
+			Single resource address               & Header handling needed     \\  
+			No mix of data and control parameters & Harder to implement/understand     \\
+			Declarative mapping with JAX-RS       & No enhanced Media-Type in HTML     \\
+			Easy to implement                     & More difficult to test \\ \hline
+		\end{tabularx}
+		\caption{Pros and Cons of HTTP Header Versioning}
+		\label{tab:esbd-service-api-http-header}
+\end{table}}
+
+\mysubsubsection{Path Versioning}
+The easiest way to manage multiple versions of a public API is Path Versioning, whereby the whole API is versioned, instead of single API Operations. The URL \inlineBash{http://localhost/api/v2/users} illustrates how to access a specific version of an API Operation via a Path version. The Path Versioning is the most used approach to version a public API, because of its simplicity to realize.  The following Table \vref{tab:esbd-service-api-path} shows the Pros and Cons of API Versioning with Path versions.
+
+{\renewcommand{\arraystretch}{1.2}%
+	\begin{table}[h]
+		\begin{tabularx}{\textwidth}{ X|X }	
+			\textbf{Pros}                         & \textbf{Cons}    \\  \hline
+			Easy to implement                     & Multiple resource addresses      \\
+			Easy to understand                    & Version actually not part of resource     \\  
+			No mix of data and control parameters & Latest version unknown \\ \hline
+		\end{tabularx}
+		\caption{Pros and Cons of Path Versioning}
+		\label{tab:esbd-service-api-path}
+\end{table}}
 
 \section{Managing Adapters and Transformers as Services}
 \label{sec:esbd-adap-trans-service}

@@ -343,8 +343,7 @@ In the prototype, the built REST Clients are injectable into CDI Beans, whereby 
 
 \subsection{Openshift}
 \label{sec:esbi-api-openshift}
-The REST API-Management and migration does not affect Openshift, because the services REST API is either accessible only within the Openshift Project network, or is exposed via a single Openshift Route. For an exposed service, additional Openshift Routes could be created, which for instance redirect calls made to an REST API-Version to another REST API-Version. 
-\newpage
+The REST API-Management and migration does not affect Openshift, because the services REST API is either accessible only within the Openshift Project network, or is exposed via a single Openshift Route. Openshift does not provide any mechanisms for redirecting requests to other services based on path conditions, as for instance Nginx is capable to do so. 
 
 \section{Openshift Project}
 \label{sec:esbi-openshift}
