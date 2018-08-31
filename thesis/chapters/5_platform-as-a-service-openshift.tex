@@ -53,7 +53,7 @@ An Openshift BuildConfig specifies the way how a Docker Image is built on the Op
 	\item The \emph{Custom} strategy, is the build strategy, which build a Docker Image with a custom implemented build mechanism.
 	\item The \emph{Pipeline} strategy, is the build strategy, which performs a Jenkins Pipeline build on a Jenkins build server.
 \end{itemize}
-The necessary resources for the particular build strategy are provided via a git repository, and an Openshift BuildConfig can be triggered via a web hook by an external git server.\cite{S2I2018, OpenshiftBuildStrategies2018}. 
+The sources for a build are provided via a git repository, and an Openshift BuildConfig can be triggered via a web hook by an external git server.\cite{S2I2018, OpenshiftBuildStrategies2018}. 
 
 \mysubsubsection{Openshift ImageStream}
 An Openshift Image Stream and its Image Stream-Tags are an abstraction of the actual used Docker Image, and an Image Stream uses the same naming convention as Docker Tags (E.g \mentionedtext{myproject/app:1.0}), whereby
