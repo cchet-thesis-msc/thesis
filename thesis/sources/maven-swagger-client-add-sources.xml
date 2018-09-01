@@ -9,7 +9,7 @@
       <goals><goal>add-source</goal></goals>
       <configuration>
         <sources>
-          <source>${generatedClient}</source>
+          <source>${generatedClientDir}/src</source>
         </sources>
       </configuration>
     </execution>

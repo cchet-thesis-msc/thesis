@@ -8,7 +8,7 @@ client = builder.connectionCheckoutTimeout(2, TimeUnit.SECONDS)
                 .socketTimeout(2, TimeUnit.SECONDS)
                 .connectionTTL(2, TimeUnit.SECONDS)
                 .connectionPoolSize(200)
-                // Appends Tracing feature for jaxrs client
+                // Appends Tracing feature for the JAX-RS client
                 .register(ClientTracingFeature.class)
                 // Sets OAuth token on Authentication header
                 .register(AppendOAuthFilter.class)

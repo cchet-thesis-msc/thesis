@@ -242,7 +242,7 @@ The services use the MicroProfile-FaultTolerance specification to define the ser
 	\label{ls:esboi-fault-tolerance-pom}
 \end{listing}
 
-Listing \vref{ls:esboi-fault-tolerance-java} shows the CDI Producer method for producing the Keycloak token, which defines fault behavior for this method. The special use of the method as a CDI Producer method does not affect the fault tolerance logic. Each time when the producer method is called a token request is send to Keycloak, to retrieve an access token. The invocation is retried 5 times with a 100 millisecond delay, and each invocation is timed out after 5 seconds.
+Listing \vref{ls:esboi-fault-tolerance-java} shows the CDI Producer method for producing the Keycloak token, which defines fault behavior for this method. The special use of the method as a CDI Producer does not affect the fault tolerance logic. Each time when the producer method is called, a token request is send to Keycloak, to retrieve an access token. The invocation is retried 5 times with a 100 millisecond delay, and each invocation is timed out after 5 seconds.
 
 \begin{listing}[h]
 	\javaFile{\sourceDir/java-fault-tolerance.java}
@@ -257,9 +257,9 @@ The fault tolerance behavior as discussed in Section \vref{sec:esbi-fault-servic
 
 \section{REST API-Management}
 \label{sec:esbi-api}
-The services use Swagger\footnote{https://swagger.io/} to provide documentation for their REST API. Swagger provides an intermediate format, which can be used by tooling for testing and client generation. The REST API represents the public view of the service, which is implemented in a way, so that it is de-coupled from the Service Logic, and supports several ways to perform API migrations.
+The services use Swagger\footnote{https://swagger.io/} to provide documentation for their REST API. Swagger provides an intermediate format, which can be used by tooling for testing and client generation. The REST API represents the public view of the service, which is implemented in a way, so that it is de-coupled from the service logic, and supports several ways to perform API migrations.
 \\ \\
-The following sections will discuss the implementation of the REST API-Management on the service side and the REST API usage on the client side. Both use Swagger, whereby the service provides Swagger Documentation and the client uses the Swagger Documentation to generate REST Clients.
+The following sections will discuss the implementation of the REST API-Management on the service side, and the REST API usage on the client side. Both use Swagger, whereby the service provides Swagger Documentation, and the client uses the Swagger Documentation to generate REST Clients.
 
 \subsection{Service}
 \label{sec:esbi-api-service}
@@ -277,7 +277,7 @@ This section will discuss the management and implementation of the service REST 
 	\label{ls:esboi-api-service-pom}
 \end{listing}
 
-Listing \vref{ls:esboi-api-swagger-conf} shows the \mentionedtext{swarm.swagger.conf} configuration file, which configures Swagger for the documented service. During startup, Swagger will scan the configured packages for interfaces and classes, which provide documentation in form of Swagger Annotations. The scanned documentations are written to a file names \mentionedtext{swagger.json}, which contains the Swagger Documentation of the service REST API.    
+Listing \vref{ls:esboi-api-swagger-conf} shows the \mentionedtext{swarm.swagger.conf} configuration file, which configures Swagger for the documented service. During startup, Swagger will scan the configured packages for interfaces and classes, which provide documentation in form of Swagger Annotations. The scanned documentations are written to a file named \mentionedtext{swagger.json}, which contains the Swagger Documentation of the service REST API.    
 
 \begin{listing}[h]
 	\yamlFile{\sourceDir/swarm.swagger.conf}
@@ -285,7 +285,7 @@ Listing \vref{ls:esboi-api-swagger-conf} shows the \mentionedtext{swarm.swagger.
 	\label{ls:esboi-api-swagger-conf}
 \end{listing}
 
-Listing \vref{ls:esboi-api-swagger-java} shows an interface, which specifies an REST Endpoint via JAX-RS Annotations, and provides documentation via Swagger Annotations. Additionally, Java BeanValidation-Annotations are used to define constraints for the input arguments of the REST Operations, so that validation is applied on all incoming requests. The JAX-RS, Java BeanValidation and Swagger Annotations are scanned and applied to the generated Swagger Documentation.
+Listing \vref{ls:esboi-api-swagger-java} shows an interface, which specifies a REST Endpoint via JAX-RS Annotations, and provides documentation via Swagger Annotations. Additionally, Java BeanValidation-Annotations are used to define constraints for the input arguments of the REST Operations, so that validation is applied on all incoming requests. The JAX-RS, Java BeanValidation and Swagger Annotations are scanned and applied to the generated Swagger Documentation.
 
 \begin{listing}[h]
 	\javaFile{\sourceDir/java-swagger.java}
@@ -295,7 +295,7 @@ Listing \vref{ls:esboi-api-swagger-java} shows an interface, which specifies an 
 
 \subsection{Client}
 \label{sec:esbi-api-client}
-This section will discuss the implementation of the client, which uses the \mentionedtext{swagger.json} file for generating a REST Client for the given swagger Documentation. The following listings will show the configuration of the Maven Plugins, which are used generate a REST Client out of a Swagger Documentation during a Maven Build.
+This section will discuss the implementation of the client, which uses the \mentionedtext{swagger.json} file, for generating a REST Client for the given Swagger Documentation. The following listings show the configuration of the Maven Plugins, which are used generate a REST Client from a Swagger Documentation during a Maven Build.
 \\ \\
 Listing \vref{ls:esboi-api-client-add-sources-pom} shows the configuration of the Maven Helper-Plugin in the client \mentionedtext{pom.xml} , which is used to add the generated REST Client sources for the compilation. The source directory points to the directory, where the generated REST Client sources are located.
 \newpage 
@@ -306,7 +306,7 @@ Listing \vref{ls:esboi-api-client-add-sources-pom} shows the configuration of th
 	\label{ls:esboi-api-client-add-sources-pom}
 \end{listing}
 
-Listing \vref{ls:esboi-api-client-clean-pom} shows the configuration of the Maven Clean-Plugin in the client \mentionedtext{pom.xml} , which is used to clean the unwanted generated sources and resources. The Swagger Maven-Plugin generates a standalone REST Client, which cannot be turned off, but only the plain generated models and interfaces are wanted, without any back-end. 
+Listing \vref{ls:esboi-api-client-clean-pom} shows the configuration of the Maven Clean-Plugin in the client \mentionedtext{pom.xml} , which is used to clean the unwanted generated sources and resources. The Swagger Maven-Plugin generates a standalone REST Client, which cannot be turned off, but only the plain generated models and interfaces are wanted. 
 
 \begin{listing}[h]
 	\xmlFile{\sourceDir/maven-swagger-client-clean.xml}
@@ -314,12 +314,12 @@ Listing \vref{ls:esboi-api-client-clean-pom} shows the configuration of the Mave
 	\label{ls:esboi-api-client-clean-pom}
 \end{listing}
 
-Listing \vref{ls:esboi-api-client-swagger-plugin-pom} shows the Swagger Maven-Plugin configuration in the client \mentionedtext{pom.xml}, which is used to generate the REST Client during Maven Build. Custom Swagger Code-Generator templates are used, due to the fact that there is no Swagger Code-Generator, which only generates plain JAX-RS interfaces. 
+Listing \vref{ls:esboi-api-client-swagger-plugin-pom} shows the Swagger Maven-Plugin configuration in the client \mentionedtext{pom.xml}, which is used to generate the REST Client during the Maven Build. Custom Swagger Code-Generator templates are used, due to the fact that, there is no Swagger Code-Generator, which only generates plain JAX-RS interfaces. 
 \newpage
 
 \begin{listing}[h]
 	\xmlFile{\sourceDir/maven-swagger-client-swagger-plugin.xml}
-	\caption{Swagger Maven-Plugin configuration in pom.xml}
+	\caption{Generated JAX-RS interface}
 	\label{ls:esboi-api-client-swagger-plugin-pom}
 \end{listing}
 
@@ -331,7 +331,7 @@ Listing \vref{ls:esboi-api-client-api-java} shows the generated JAX-RS interface
 	\label{ls:esboi-api-client-api-java}
 \end{listing}
 
-Listing \vref{ls:esboi-api-client-api-builder-java} shows how to build an REST-Client for the generated JAX-RS interfaces, whereby developers work with the generated API, and the logic for handling the request and response is provided by RESTEasy\footnote{https://resteasy.github.io/}. Changes made to the REST API or its Swagger Documentation will cause compile errors, therefore the usage of the REST Client is type safe. The MicroProfile OpenTracing specification provides a JAX-RS Client-Filter, which integrates the REST Client request into the configured tracing back-end. This integration ensures that calls to another service, made via an REST Client, are part of an existing transaction or are the start or a new transaction.
+Listing \vref{ls:esboi-api-client-api-builder-java} shows how to build an REST-Client for the generated JAX-RS interfaces, whereby developers work with the generated API, and the logic for handling the request and response is provided by RESTEasy\footnote{https://resteasy.github.io/}. Changes made to the REST API or its Swagger Documentation will cause compile errors, therefore the usage of the REST Client is type safe. The MicroProfile-OpenTracing specification provides a JAX-RS Client-Filter, which integrates the REST Client request into the configured tracing back-end. This integration ensures, that calls to another service, made via a REST Client, contribute to an existing trace, or are the start of a new trace.
 
 \begin{listing}[h]
 	\javaFile{\sourceDir/java-swagger-client-builder.java}
@@ -339,7 +339,7 @@ Listing \vref{ls:esboi-api-client-api-builder-java} shows how to build an REST-C
 	\label{ls:esboi-api-client-api-builder-java}
 \end{listing}
 
-In the prototype, the built REST Clients are injectable into CDI Beans, whereby the Rest Clients are managed by a custom proxy to apply proper fault tolerance behavior to the REST Client method calls.
+In the prototype, the built REST Clients are injectable into CDI Beans, whereby the Rest Clients are managed by a custom proxy, which applies proper fault tolerance behavior to the REST Client method calls.
 
 \subsection{Openshift}
 \label{sec:esbi-api-openshift}
@@ -347,13 +347,13 @@ The REST API-Management and migration does not affect Openshift, because the ser
 
 \section{Openshift Project}
 \label{sec:esbi-openshift}
-This section will discuss the implementation of the Openshift Project, which represents the ESB. The implementations are represented by scripts, configurations and secrets, which ensure that the Openshift Project is properly setup and provides all resources consumed by the services, such as Openshift Volumes, Openshift ConfigMaps and Openshift Secrets. The Openshift resources, which are consumed by the hosted services, are managed by one script per service. 
+This section will discuss the implementation of the Openshift Project, which represents the ESB application. The implementations are represented by scripts, configurations and secrets, which ensure that the Openshift Project is properly setup, and provides all resources consumed by the services, such as Openshift Volumes, Openshift ConfigMaps and Openshift Secrets. The Openshift resources, which are consumed by the hosted services, are managed by one script per service. 
 \\ \\
-The scripts, configurations and secrets are managed by operators, which ensure that the Openshift Projects are properly setup and provide all Openshift resources for the hosted services for a specific stage, the Openshift Project represents.
+The scripts, configurations and secrets are managed by operators, which ensure that the Openshift Projects are properly setup, and provide all Openshift resources for the hosted services, for a specific stage, an Openshift Project represents.
 
 \subsection{Scripts}
 \label{sec:esbi-openshift-secrets}
-This section will discuss the implemented scripts for managing the Openshift resources consumed by the services. Listing \vref{ls:esboi-openshift-oc-service} shows an excerpt of an implemented script, which manages Openshift Secrets created from files for a service. The Openshift Secrets could also have been created from Openshift Templates, whereby the secrets are either hard-coded in the Openshift Templates or are provided via Openshift Template-Parameters.
+This section will discuss the implemented scripts for managing the Openshift resources consumed by the services. Listing \vref{ls:esboi-openshift-oc-service} shows an excerpt of an implemented script, which manages Openshift Secrets for a service, which are created from files. The Openshift Secrets could also have been created from Openshift Templates, whereby the secrets are either hard-coded in the Openshift Templates, or are provided via Openshift Template-Parameters.
 
 \begin{listing}[h]
 	\bashFile{\sourceDir/bash-oc-service.sh}
@@ -361,11 +361,19 @@ This section will discuss the implemented scripts for managing the Openshift res
 	\label{ls:esboi-openshift-oc-service}
 \end{listing}
 
-The scripts are a convenient way for managing Openshift Secrets, and are more flexible then template based Openshift Secret-Management. With Openshift Templates, there would also be the need for scripts, which can create/modify/delete via Openshift Template created resources. The scripts are separated from the actual secrets or configurations, and can therefore be used for all stages, whereby each stage provides their own secrets and configurations. 
+The scripts are a convenient way for managing Openshift Secrets, and are more flexible then template based Openshift Secret-Management. With Openshift Templates, there would also be the need for scripts, which can create/modify/delete via Openshift Template created resources. The scripts are separated from the actual secrets or configurations, and can therefore be used for all stages, whereby each stage provides their own secrets and configurations. \\
+
+Listing \vref{ls:esboi-openshift-oc-template} shows the CLI functions, for managing the database application, which is used by the prototype, to simulate the external integrated database. The template encapsulates and defines all resources needed by this application, which are created during the instantiation process. This is a main feature of Openshift Templates, which allows to bundle all definitions into one template file.
+ 
+\begin{listing}[h]
+	\bashFile{\sourceDir/bash-oc-template.sh}
+	\caption{Shell functions for managing an application via CLI}
+	\label{ls:esboi-openshift-oc-template}
+\end{listing}
 
 \subsection{Templates}
 \label{sec:esbi-openshift-config}
-There is no need for additional Openshift Templates, when it comes to the services, because Fuse Integration Services 2.0 and the Fabric8 Maven-Plugin provide all necessary resources and functionality to manage the services via their own code bases. The code bases manage Openshift Templates such as the \mentionedtext{deployment.yml}, which defines the environment for a service, by specifying
+There is no need for additional Openshift Templates, when it comes to the services, because Fuse Integration Services 2.0 and the Fabric8 Maven-Plugin provide all necessary resources and functionality to manage the services via their own code bases. The service code bases manage Openshift Templates, such as the \mentionedtext{deployment.yml}, which defines the environment for a service, by specifying
 \begin{itemize}
 	\item the injection of configurations and secrets,
 	\item the health checks,
@@ -374,8 +382,8 @@ There is no need for additional Openshift Templates, when it comes to the servic
 	\item and the accessible ports.
 \end{itemize}
 
-The Fabric8 Maven-Plugin manages only the particular integration service resources, by applying proper labels and accessing the resource by the applied labels.
+The Fabric8 Maven-Plugin manages only the service resources of an Maven Project, by applying proper labels and accessing the resources by its labels.
 \\ \\
-The following Chapter \vref{cha:esbd} will evaluate and analyze the implemented prototype, if the prototype fulfills the specification of Chapter \vref{cha:esboc} and if the prototype is a valid representation for an ESB in Openshift.
+The following Chapter \vref{cha:esbd} will evaluate and analyze the implemented prototype, if the prototype fulfills the specification of Chapter \vref{cha:esboc}, and if the prototype is a valid representation for an ESB in Openshift.
 
 

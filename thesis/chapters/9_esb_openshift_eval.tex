@@ -245,7 +245,8 @@ Figure \vref{fig:esbd-service-adapter} illustrates how the prototype could be in
 
 The Adapter and Message Translator have to be implemented as a standalone application (microservice), which for instance can be realized in Java with the Camel framework, which provides an API for implementing Enterprise integration Patterns, and is capable of running as a standalone application. \\
 
-
-
 \section{Further Work}
 \label{sec:esbd-furhter-work}
+During the development of this thesis and the prototype, Red Hat has released its new version of the JBoss Fuse platform, which now is based on Openshift, and is called Red Hat Fuse 7\footnote{\url{https://www.redhat.com/en/technologies/jboss-middleware/fuse}}. Red Hat Fuse 7 enhances Openshift with features for implementing an ESB, whereby the main goal is to provide non-technical personal the possibility to create integrations. Red Hat Fuse 7 provides iPaaS features, by providing a low/no code UI, which allows to create integrations without the need to write a single line of code. \\
+
+The next step is to implement an ESB with Red Hat Fuse 7, to see the differences between the manual approach, represented by the prototype, and the approach using iPaaS provided features. Red Hat Fuse 7 should make it easier for enterprises to create integrations to external services, as well as the management of these integrations.   
