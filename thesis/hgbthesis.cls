@@ -564,13 +564,13 @@ This work is published under the conditions of the
 %% Assembly of title pages ----------------------------------------------------
 
 \renewcommand{\@mastertitlepages}{
-	\@mastertitle
+	%\@mastertitle
 	\@copyrightpage
 	\@declarationpage
 }
      
 \renewcommand{\@diplomatitlepages}{
-	\@diplomatitle
+	%\@diplomatitle
 	\@copyrightpage
 	\@declarationpage
 }
