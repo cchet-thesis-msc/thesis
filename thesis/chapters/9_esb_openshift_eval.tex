@@ -10,9 +10,9 @@ This chapter will discuss the implemented prototype of Chapter \vref{cha:esbi}, 
 \end{itemize}
 which are very important, when running an ESB on Openshift. Whenever possible, Openshift will be compared to JBoss EAP, which can be used as the platform for the ESB middleware JBoss Fuse, as discussed in Section \vref{fig:esb-software-architecture}. \\
 
-The prototype implementation represents an ESB running on Openshift, but is actually nothing more than an application represented by several microservices, running on a PaaS platform. Instead of managing a monolithic ESB application as discussed in Section \vref{sec:esb-as-software}, the ESB application is split into independent microservices, which are managed completely separately, as discussed in Section \vref{sec:esb-as-cloud}. \\
+The prototype implementation represents an ESB running on Openshift, but is actually nothing more, than an application represented by several microservices, running on a PaaS platform. Instead of managing a monolithic ESB application as discussed in Section \vref{sec:esb-as-software}, the ESB application is split into independent microservices, which are managed completely separately, as discussed in Section \vref{sec:esb-as-cloud}. Because of the usage of Openshift as the platform, the implemented services of the prototype are distributed services per default, which is the nature of Kubernetes, which is the base for Openshift. Openshift takes care about the distribution of the Pods within the Openshift Cluster, and ensures, that the Pods are accessible via their related service abstraction. \\
 
-When splitting any monolithic application into independent microservices, then the sum of resources needed by all microservices of the application, will be higher as resources needed by a monolithic application. With microservices, more resources are needed, due to the fact, that each microservice brings in its own libraries and runtime environment, whereby the monolithic application runs in one runtime environment, such as JBoss EAP, where all libraries are shared. Then more heterogeneous libraries are used by the microservices, then more resources they will need to run. This a trade off, which needs to be considered when designing microservices for an ESB or any other application represented by microservices, or when splitting up a monolithic application to a microservice architecture.
+When splitting any monolithic application into independent microservices, then the sum of resources needed by all microservices of the ESB, will be higher as the resources needed by a monolithic ESB. With microservices more resources are needed, due to the fact, that each microservice brings in its own libraries and runtime environment, whereby the monolithic ESB runs in one runtime environment, where all libraries are shared. Then more heterogeneous libraries are used by the microservices, then more resources they will need to run. This a trade off, which needs to be considered when designing microservices for an ESB or any other application, which consists of microservices, or when splitting up a monolithic application to a microservice architecture.
 \newpage
 {\renewcommand{\arraystretch}{1.2}%
 \newcolumntype{m}{>{\hsize=.3\hsize}X}%
@@ -27,24 +27,39 @@ When splitting any monolithic application into independent microservices, then t
 \end{table}}
 
 Table \vref{tab:esbd-resource-monolith-vs-microservice} is not a real world example, but shows the trend of the resource need of the whole application, when a monolithic application is split up into microservices. When the application is split up into too many microservices, than the needed resources increase drastically. \\
- 
-The following sections will discuss the tasks introduced in the beginning of this chapter, and will show that these task can be performed to the implemented prototype as well.
+
+\section{Service mediation}
+\label{sec:esbd-service-mediation}
+The SOA Patterns specify a mediation layer, as layer which facilitates the communication across multiple services by providing an abstraction layer, which de-couples the services from each other. The mediation layer ensures, that services can seamlessly communicate with replaced or newly released services instances. Kubernetes provides the Kubernetes Services, which mediates the request among multiple service instances represented by the service Pods. The Kubernetes Service is a content unaware mediator, because the message remains unchanged, and only mediation between service instances is supported.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[scale=1]{images/esbd-service-mediation.pdf}
+	\caption{Openshift Service mediation}
+	\label{fig:esbd-service-mediation}
+\end{figure}
+
+Figure \vref{fig:esbd-service-mediation} illustrates a scenario, where the service Pod 2 on Node 2 fails, and gets rescheduled on Node 3, whereby it gets a new IP address assigned. The Kubernetes Service is aware that Pod 2 has been rescheduled, and will balance request to the rescheduled Pod 2 located now on Node 3, when Pod 2 is fully up and running. A Kubernetes Service performs a simple mediation by abstracting service Pods via service names, and load balancing of the requests to the service Pods depending on the chosen algorithm. \\
+
+With an ESB, there is no central mediator needed, because an ESB is a distributed architectural model, which has no central component like a Hub and Spoke architecture. If message translation is needed, because of a consumer incapability of supporting the ESB used message format and protocols, then an adapter and message translator is needed as discussed in Section \vref{sec:esbd-adap-trans-service}. \\
+
+The following sections will discuss the tasks introduced in the beginning of this chapter, and will show, that these task can be performed on the implemented prototype.
 
 \section{Managing Multiple Environments}
 \label{sec:esbd-multiple-env}
-An ESB is commonly hosted on multiple environments, whereby at least one productive and one testing environment should be present. These environments were commonly a VM, which provided the runtime environment for the ESB. As the prototype shows, the environment is now represented by an Openshift Project, which can be reproduced via scripts, as discussed in Section \vref{sec:esbi-openshift}. \\
+An ESB is commonly hosted on multiple environments, whereby at least one productive and one testing environment should be present. These environments were commonly a VM, which provided the runtime environment for the ESB. As the prototype shows, the environment is now represented by an Openshift Project, which can be reproduced via scripts as discussed in Section \vref{sec:esbi-openshift}. \\
 
-The services hosted on the ESB are using Fuse integration Service 2.0 and its provided tooling, which ensure, that the services are properly encapsulated in a container, and are properly managed in Openshift. Therefore, the service developers provide the necessary Openshift Templates, which has the effect, that the operators have no interaction with the service artifacts and service runtime environments anymore. Operators have only to manage
+The services hosted on the ESB are using Fuse integration Service 2.0 and its provided tooling, which ensure, that the services are properly encapsulated in a container, and are properly managed in Openshift. Therefore, the service developers provide the necessary Openshift Templates, which has the effect, that the operators have no interaction with the service artifacts and service runtime environments anymore. Operators have to manage
 \begin{itemize}
-	\item the Openshift Project, which hosts the services,
+	\item the Openshift Project, which contains the services,
 	\item the Openshift ConfigMaps, which hold the service non-sensitive configuration,
-	\item the Openshift Secrets, which hold the sensitive service configuration,
-	\item and scripts for backup/restore of service data or instance scaling.
+	\item and the Openshift Secrets, which hold the sensitive service configuration.
 \end{itemize} 
 \ \\
-Listing \vref{ls:esboi-config-project-stages-prod} shows how developers reference Openshift Objects, such as Openshift ConfigMaps and Openshift Secrets, which are managed by operators. \\ 
+Listing \vref{ls:esboi-config-project-stages-prod} illustrates how developers reference Openshift Objects, such as Openshift ConfigMaps and Openshift Secrets, which are managed by operators. \\ 
 
-Figure \vref{fig:esbd-multi-stage-env} illustrates the management and provisioning of multiple environments for an ESB, whereby the environment is represented by an Openshift Project. The Management Server pulls the scripts and Openshift Templates from a VCS Server, and the configurations from a Configuration Server, and uses them to provision new Openshift Projects, or manage existing ones. The scripts and Openshift Templates are separated from the configurations, which are actually providing the data for the scripts and Openshift Template-Parameters. With such an approach, the infrastructure becomes reproducible, versioned, and therefore consistent and disposable. These characteristics are also principles of IaC, which have been discussed in Chapter \vref{cha:iac}. 
+Figure \vref{fig:esbd-multi-stage-env} illustrates the management and provisioning of multiple environments for an ESB, whereby the environment is represented by an Openshift Project. The Management Server pulls the scripts and Openshift Templates from a VCS Server, and the configurations from a Configuration Server, and uses them to provision new Openshift Projects, or manage existing ones. The scripts and Openshift Templates are separated from the configurations, which are actually providing the data for the scripts and Openshift Template-Parameters. With such an approach, the infrastructure becomes reproducible, versioned, and therefore consistent and disposable. These characteristics are also principles of IaC, which have been discussed in Chapter \vref{cha:iac}.
+\newpage 
 
 \begin{figure}[htbp]
 	\centering
@@ -53,11 +68,12 @@ Figure \vref{fig:esbd-multi-stage-env} illustrates the management and provisioni
 	\label{fig:esbd-multi-stage-env}
 \end{figure}
 
-The interaction of the Management Server, VCS Server and Configuration Server, as illustrated in Figure \vref{fig:esbd-multi-stage-env}, is similar to the Figure \vref{fig:reproduce-infrastructure}, which illustrated how a system can be reproduced with parametrized templates and an IaC tool. The Openshift CLI provides functionality to manage Openshift Objects, which is what needs to be done, when providing an environment in form of an Openshift Project, therefore the Openshift CLI acts as an IaC tool.  \\
+The interaction of the Management Server, VCS Server and Configuration Server, as illustrated in Figure \vref{fig:esbd-multi-stage-env}, is similar to the Figure \vref{fig:reproduce-infrastructure}, which illustrated, how a system can be reproduced with parametrized templates and an IaC tool. The Openshift CLI provides functionality to manage Openshift Objects, which is what needs to be done, when providing an environment in form of an Openshift Project, therefore the Openshift CLI acts as an IaC tool.  \\
 
-Table \vref{tab:esbd-multi-stage-env} compares the Openshift and JBoss EAP contained mechanisms, which provide the listed infrastructure features. As illustrated in the table, Openshift provides networking and isolation features, which are provided to JBoss EAP by its hosting environment, such as a VM. Except of the Networking and Isolation feature, JBoss EAP supports all other features either natively or by supporting a third party library. Nevertheless, Openshift combines all features in one platform, and makes them manageable via Openshift Templates and the Openshift CLI. \\
+Table \vref{tab:esbd-multi-stage-env} compares the Openshift and JBoss EAP contained mechanisms, which provide the listed infrastructure features. As illustrated in the table, Openshift provides networking and isolation features, which are provided to JBoss EAP by its hosting environment, such as a VM. Except of the networking and isolation feature, JBoss EAP supports all other features either natively or by supporting a third party library. Nevertheless, Openshift combines all features in one platform, and makes them manageable via Openshift Templates and the Openshift CLI. \\
 
-Openshift runs Docker Containers, and therefore the programming language, the service was implemented with, doesn't matter, as long as the services can run in a container. Also, services hosted on PaaS platforms communicate via standard Protocols such as HTTP, which are commonly supported by almost any programming language. JBoss EAP on the contrary, runs only Java applications.
+Openshift runs Docker Containers, and therefore the programming language, the service was implemented with doesn't matter, as long as the services can run in a container. Also, services hosted on PaaS platforms communicate via standard Protocols such as HTTP, which are commonly supported by almost any programming language. JBoss EAP on the contrary, runs only Java applications.
+\newpage
 
 {\renewcommand{\arraystretch}{1.2}%
 \begin{table}[h]
@@ -90,7 +106,7 @@ The next section will discuss the service security within an Openshift Project, 
 
 \section{Managing Service Security}
 \label{sec:esbd-service-security}
-With a common ESB middleware, the services are protected by running within a single runtime environment, or by security features provided by a supported third party library. In an Openshift Project, the services are implicitly protected by being isolated in a Kubernetes Namespace, as discussed in Section \vref{sec:paas-openshift-project}, whereby the namespace of an Openshift Project cannot be accessed by other Openshift Projects without additional configuration.
+With a common ESB middleware, the services are protected by running within a single runtime environment, or by security features provided by a supported third party library. In an Openshift Project, the services are implicitly protected by being isolated in a Kubernetes Namespace, as discussed in Section \vref{sec:paas-openshift-project}, whereby the namespace of an Openshift Project cannot be accessed by other Openshift Projects without additional configuration. Services, which are supposed to be accessible from external networks, have to be explicitly exposed via an Openshift Route, which can handle secured connections, similar to an reverse proxy.
 \newpage
 
 \begin{figure}[htbp]
@@ -102,7 +118,7 @@ With a common ESB middleware, the services are protected by running within a sin
 \ \\
 Figure \vref{fig:esbd-service-security} illustrates an example, similar to the implemented prototype, whereby two Openshift Projects host the same services, and where the Pod Networks of the two Openshift Projects are joined. The joined Pod Networks allow services hosted in project PROJ\_PROD\_2 to access services hosted in project PROJ\_PROD\_1 by their fully qualified service name. The fully qualified service name has the form of \mentionedtext{<service>.<project\_namespace>.svc.cluster.local}. Joining two Pod Networks is performed by Openshift Cluster-Administrators, and cannot be performed by developers. \\
 
-Additionally to the isolation of the services within the Openshift Project, the Integration Service is secured via OAuth2, whereby the resource access is controlled by a central Single-Sign-On Server (SSO Server). On the one hand, the services are isolated within a Kubernetes Namespace, and on the other hand, additional security, such as access control, has to be provided by the service itself, because Openshift doesn't provide such a feature. It is not meant to isolate services from each other within an Openshift Project, because an Openshift Project should only contain a set of services, which don't have to be isolated from each other. \\
+Additionally to the isolation of the services within the Openshift Project, the Integration Service is secured via OAuth2, whereby the resource access is controlled by a central Authentication Server. On the one hand, the services are isolated within a Kubernetes Namespace, and on the other hand, additional security, such as access control, has to be provided by the service itself, because Openshift doesn't provide such a feature. It is not meant to isolate services from each other within an Openshift Project, because an Openshift Project, in particular a Kubernetes Namespace should only contain a set of services, which don't have to be isolated from each other. \\
 
 Table \vref{tab:esbd-service-security} compares the Openshift and JBoss EAP contained mechanisms, which provide the listed security features. As illustrated in the table, Openshift doesn't provide any support for access control on the service level, which is normal for a PaaS platform, such as Openshift. The services running in Docker Containers on an Openshift Cluster, have to implement access control, or have to use third party frameworks, such as Wildfly Swarm, which provide access control features as discussed in Section \vref{sec:esbi-security}. JBoss EAP on the other hand is a Java Application-Server, which provides support for access or user control for several providers. 
 
@@ -137,14 +153,14 @@ Sometimes it is necessary to run multiple versions of a service, for instance, i
 	\caption{Running multiple service versions on Openshift}
 	\label{fig:esbd-service-multiple-versions}
 \end{figure}
-\ \\
-\emph{PROJ\_1} of Figure \vref{fig:esbd-service-multiple-versions} illustrates an A/B Release, which is used to run the old and new version of a service in parallel, whereby a portion of the service consumers get access to the new version, while the rest of the service consumers are still using the old version. A/B Releases are used to validate the new version in the productive environment, before fully releasing it to all consumers. In this scenario, the requests are load balanced to either the new or old service version. \\ 
+
+\emph{PROJ\_1} of Figure \vref{fig:esbd-service-multiple-versions} illustrates an A/B Release, which is used to run the old and new version of a service in parallel, whereby a portion of the service consumers get access to the new version, while the rest of the service consumers are still using the old version. A/B Releases are used to validate the new version in the productive environment, before fully releasing it to all consumers. In this scenario, the requests are load balanced by the Openshift Route to either the new or old service version. \\ 
 
 \emph{PROJ\_2} of Figure \vref{fig:esbd-service-multiple-versions} illustrates a Blue/Green Release, which is used to run the old and the new version of a service in parallel, whereby the Openshift Route switches between the old and new service version. In this scenario, all service consumer access the same service version, which is currently accessible by the Openshift Route. \\
 
 \emph{PROJ\_3} of Figure \vref{fig:esbd-service-multiple-versions} illustrates two service versions running completely separated in parallel, whereby both versions are accessible via their own Openshift Route. This scenario is not a release scenario, and should be used if multiple service versions have to be provided outside of the scope of a release. \\
 
-Table \vref{tab:esbd-service-multiple-versions} compare the Openshift and JBoss EAP contained mechanisms, which provide the listed release features. Multiple service versions on an Openshift Cluster are represented by separate Openshift Service-Objects, whereby with JBoss EAP, multiple service versions are either represented by separate JBoss EAP instances, or deployment contexts on a single JBoss EAP instance.
+Table \vref{tab:esbd-service-multiple-versions} compares the Openshift and JBoss EAP contained mechanisms, which provide the listed release features. Multiple service versions on an Openshift Cluster are represented by separate Openshift Service-Objects, whereby with JBoss EAP, multiple service versions are either represented by separate JBoss EAP instances, or deployment contexts on a single JBoss EAP instance. With JBoss EAP, version switching and weighted routing can be performed by an external reverse proxy, which in Openshift can be performed by an Openshift Route.
 
 {\renewcommand{\arraystretch}{1.2}%
  \newcolumntype{m}{>{\hsize=.32\hsize}X}%
@@ -166,9 +182,9 @@ As Figure \vref{fig:esbd-service-multiple-versions} illustrates, the implemented
 
 \section{Managing Migration of Public API}
 \label{sec:esbd-multi-stage-env}
-This section will discuss the management of services public API, which is crucial, when it comes to distributed services. Changes made on the public API of a service can break the functionality of an application, the service is part of, or break the functionality of an external application, which depends on this service. The public API is the API the service exposes, which could only be consumed by internal consumers, but has to be managed the same way, as the API would be exposed to external consumers. There are several ways to migrate a public API, whereby some of them will be discussed in this section. \\  
+This section will discuss the management of services public API, which is crucial, when it comes to distributed services. Changes made on the public API of a service can break the functionality of an application, the service is part of, or break the functionality of an external application, which depends on this service. The public API is the API the service exposes, which could only be consumed by internal consumers, but has to be managed the same way, as the API would be exposed to external consumers. There are several ways to migrate a public API, whereby some of them will be discussed in the further sections. \\  
 
-Services running on an Openshift Cluster are completely separated from each other and have their own life-cycle. Therefore, they have to provide a public API, which can be consumed by other services. The public API has to be designed properly in the first place, as well as the management of its migrations. At least, the last both versions will have to be supported, to give the developers of the consuming services enough time to apply to the migrations performed on the public API. Commonly, a service has two versions, on the one hand, the service release version, and on the other hand, the service API version, which is allowed to remain the same over multiple service releases. The following sections will discuss the different ways to version the public API of a service.
+Services running on an Openshift Cluster are completely separated from each other and have their own life-cycle. Therefore, they have to provide a public API, which can be consumed by other services. The public API has to be designed properly in the first place, as well as the management of its migrations. At least, the last both versions will have to be supported, to give the developers of the consuming services enough time to apply to the migrations performed on the public API. Commonly, a service has two versions, on the one hand, the service release version, and on the other hand, the service API version, which is allowed to remain the same over multiple service releases. The following sections will discuss the different ways to migrate the public API of a service.
 
 \mysubsubsection{URL Query-Parameter Versioning}
 Multiple versions of a public API can be managed via a URL Query-Parameter, whereby the URL Query-Parameter defines the version to use of a single API Operation. The URL \inlineBash{http://localhost/api/users?version=2} illustrates how to access a specific version of an API Operation via a URL Query-Parameter. The following Table \vref{tab:esbd-service-api-query-param} shows the Pros and Cons of API Versioning with URL Query-Parameters.
@@ -197,7 +213,7 @@ Multiple version of a public API can be managed via HTTP Headers in the followin
 	e.g. \inlineBash{Accept: application/vnd.app.model.v1+json;qs=0.9}
 \end{itemize}
 \ \\
-The approach of HTTP Header Versioning brings in more flexibility, but also makes the API Versioning more complex for developers to implement, and harder to understand for consumers. The following Table \vref{tab:esbd-service-api-http-header} shows the Pros and Cons of API Versioning with HTTP Headers.
+The approach of HTTP Header Versioning brings in more flexibility, but also makes the API Versioning harder to understand for consumers, especially when quality of service is used in the HTTP Accept-Headers of multiple API Operations. The following Table \vref{tab:esbd-service-api-http-header} shows the Pros and Cons of API Versioning with HTTP Headers.
 
 {\renewcommand{\arraystretch}{1.2}%
 \begin{table}[h]
@@ -221,20 +237,18 @@ The easiest way to manage multiple versions of a public API is Path Versioning, 
 			\textbf{Pros}                         & \textbf{Cons}                         \\  \hline
 			Easy to implement                     & Multiple resource addresses           \\
 			Easy to understand                    & Declarative mapping with JAX-RS       \\  
-			No mix of data and control parameters & Version actually not part of resource \\ \hline
+			No mix of data and control parameters & Version actually not part of resource \\
 			Easy to switch between versions       & Latest version unknown                \\ \hline
 		\end{tabularx}
 		\caption{Pros and Cons of Path Versioning}
 		\label{tab:esbd-service-api-path}
 \end{table}}
 
-The prototype uses Swagger for documenting the services public API, as discussed in Section \vref{sec:esbi-api}, whereby Swagger is used to generate the Swagger Specification and clients. One advantage of a Swagger generated client is, that developers work with a generated class or interface, and therefore, developers work with a typed client, which will cause compile errors on breaking API changes. The API changes can be performed in a way, whereby developers will not have to change anything in their source code, but could also be performed in a way to cause compile errors, which force the developers to apply to the breaking API changes. If the client is implemented by hand and not generated by Swagger, then developers will have to ensure that the implemented client is in sync with the currently used API version.
+The prototype uses Swagger for documenting the services public API, as discussed in Section \vref{sec:esbi-api}, whereby Swagger is used to generate the Swagger Specification and clients. One advantage of a Swagger generated client is, that developers work with a generated class or interface, and therefore, developers work with a typed client, which will cause compile errors on breaking API changes. The API changes can be performed in a way, whereby developers will not have to change anything in their source code, but could also be performed in a way to cause compile errors, which force the developers to apply to the breaking API changes. If the client is implemented by hand and not generated by a tool, then developers will have to ensure that the implemented client is in sync with the currently used API version.
 
 \section{Managing Adapters and Message Translator as Services}
 \label{sec:esbd-adap-trans-service}
-Adapters and Transformers are part of the Enterprise Integration Patterns, whereby the Adapter is used couple an application to a message bus, and the Transformer is used to transform message from the application supported format to the message bus supported format, and visa versa. The Adapter and Message Translator can either be  located at the external service, or can be located in the messaging system, the external service connects to. \\
-
-Commonly, a message bus system is implemented to use one form of communication, such as REST, and one form of data representation. If external services need to access the message bus, but don't support the message bus protocol and data format, then Adapters and Message Translators are needed, to connect the external service to the message bus. \\
+Adapters and Transformers are part of the EI Patterns, whereby the Adapter is used couple an application to a message bus, and the Transformer is used to transform messages from the application supported format to the message bus supported format and visa versa. The Adapter and Message Translator can either be  located at the external service, or can be located in the messaging system, the external service connects to. Commonly, a message bus system is implemented to use one form of communication, such as REST, and one form of data representation. If external services need to access the message bus, but don't support the message bus protocol and data format, then Adapters and Message Translators are needed, to connect the external service to the message bus. \\
 
 Figure \vref{fig:esbd-service-adapter} illustrates how the prototype could be integrated with external applications via an Adapter and Message Translator. If the Adapter and Message Translator are located at the external service, then the Adapter and Message Translator have to be provided in the programming languages, the external services are implemented with. If the Adapter and Message Translator are located in the Openshift Project, then they can be implemented in the programming language of choice.
 
@@ -245,7 +259,7 @@ Figure \vref{fig:esbd-service-adapter} illustrates how the prototype could be in
 	\label{fig:esbd-service-adapter}
 \end{figure}
 
-The Adapter and Message Translator have to be implemented as a standalone application (microservice), which for instance can be realized in Java with the Camel framework, which provides an API for implementing Enterprise Integration Patterns, and is capable of running as a standalone application. \\
+The Adapter and Message Translator have to be implemented as a standalone application (microservice), which for instance can be realized in Java with the Camel framework, which provides an API for implementing EI Patterns, and is capable of running as a standalone application. The adapter and message translator application can be hosted as a separate Openshift Service, or can be added to the service Pod as a so called side-by container, which proxies the requests to the actual container.  \\
 
 \section{Further Work}
 \label{sec:esbd-furhter-work}
