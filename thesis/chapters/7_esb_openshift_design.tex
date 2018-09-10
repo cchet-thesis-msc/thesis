@@ -87,6 +87,6 @@ The Openshift Project will host the services and manage their configurations and
 
 The services must manage their integration into Openshift, by providing the necessary templates, whereby configurations and secrets are referenced by their predefined names and keys. The services must expose all necessary configuration parameters, which allow to configure the service for a specific stage, whereby the Openshift Project will provide the proper configuration and secret values for the specific stage. \\
 
-For demonstration purpose, the Openshift Project, representing the ESB, will host a tracing service and a log aggregation service as well. This is due to the fact, that in shared environments, the customers have limited privileges, and therefore, not all configurations of Openshift are available. \\
+The implemented prototype will consist of two Openshift Projects, whereby one Openshift Project will host the tracing service, log aggregation service and authentication service, and the second Openshift project will host the ESB services along with the simulated external database, which will be integrated by the ESB. \\
 
 The following chapter will discuss the implementation of the designed prototype. 

@@ -1,6 +1,6 @@
 swarm:
   deployment:
-    ${project.artifactId}.war:
+    ${project.build.finalName}.war:
       web:
         login-config:
           auth-method: "KEYCLOAK"

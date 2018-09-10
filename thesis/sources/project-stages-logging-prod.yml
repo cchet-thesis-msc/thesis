@@ -1,20 +1,22 @@
+# Custom handler configuration cannot resolve env variables,
+# therefore pipe to a system property and use the system property
 GRAYLOG_HOST: "${env.GRAYLOG_HOST}"
-GRAYLOG_PORT: "${env.GRAYLOG_PORT}"
-GRAYLOG_PROT: "${env.GRAYLOG_PROT}"
 
 swarm:
   logging:
+    file-handlers:
     custom-handlers:
-      SYSLOGGER:
-        named-formatter: "DEFAULT_LOG_PATTERN"
-        attribute-class: "org.jboss.logmanager.handlers.SyslogHandler"
-        module: "org.jboss.logmanager"
+      GELF-HTTP:
+        named-formatter: DEFAULT_LOG_PATTERN
+        attribute-class: "biz.paluch.logging.gelf.wildfly.WildFlyGelfLogHandler"
+        module: "biz.paluch.logging"
         properties:
-          serverHostname: "${GRAYLOG_HOST}"
-          port: "${GRAYLOG_PORT}"
-          protocol: "${GRAYLOG_PROT}"
-          hostname: "${project.build.finalName}"
+          host: "${GRAYLOG_HOST}"
+          extractStackTrace: "true"
+          includeFullMdc: "true"
+          maximumMessageSize: "1048576"
     root-logger:
       level: "WARN"
       handlers:
-        - "SYSLOGGER"
+        - "GELF-HTTP"
+        - "CONSOLE"

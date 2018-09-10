@@ -1,7 +1,11 @@
-JAEGER_SERVICE_NAME: "${project.build.finalName}"
-JAEGER_AGENT_HOST: "${env.JAEGER_HOST}"
-JAEGER_AGENT_PORT: "${env.JAEGER_PORT}"
-JAEGER_REPORTER_LOG_SPANS: "true"
-JAEGER_REPORTER_FLUSH_INTERVAL: "1000"
-JAEGER_SAMPLER_TYPE: "const"
-JAEGER_SAMPLER_PARAM: "1"
+# Thorntail.io fraction does not expose this parameter,
+# therefore provide it as sytem property
+JAEGER_ENDPOINT: "${env.JAEGER_HOST}"
+
+swarm:
+  jaeger:
+    service-name: "${project.build.finalName}"
+    reporter-log-spans: true
+    reporter-flush-interval: 100
+    sampler-type: const
+    sampler-parameter: 1

@@ -8,10 +8,10 @@ public static class MDCContainerRequestFilter
   @Override
   public void filter(ContainerRequestContext requestContext)
     throws IOException {
-          // Uber specific format 'aaa:ffff:0:1'
-          final String tracingId = scopeInstance.get().span()
-                                    .context().toString()
-                                    .split(":")[0];
-          MDC.put("transaction.id", tracingId);
+    // Uber specific format 'aaa:ffff:0:1'
+    final String tracingId = scopeInstance.get().span()
+                              .context().toString()
+                              .split(":")[0];
+    MDC.put("transaction.id", tracingId);
   }
 }

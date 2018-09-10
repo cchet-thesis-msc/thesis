@@ -16,11 +16,11 @@ The following sections will give a brief introduction about the most important t
 \label{sec:esbi-technology-fis}
 JBoss Fuse Integration Services 2.0 is a set of tooling for developing services running on an Openshift Cluster. It provides Openshift integrations for different frameworks such as Spring Boot, Karaf or Camel. The services are started via an Java-Agent such as Prometheus or Jolokia, which are used to monitor the services during runtime. Additionally, a Maven Plugin is provided, which allows to interact with the Openshift Cluster during a Maven build, whereby the service life-cycle on an Openshift Cluster can be managed via Maven Goals. JBoss Fuse Integration Services 2.0 allows developers to interact with an Openshift Cluster in a way, like developers did before with an application server like Wildfly\cite{Prometheus2018, Jolokia2018}.
 
-\subsection{Wildfly Swarm}
+\subsection{Thorntail.io}
 \label{sec:esbi-technology-swarm}
-Wildly Swarm is the Java Enterprise answer to Spring Boot, and is a framework, which allows to package an application into an Uber-JAR. An Uber-JAR is a packaged standalone application, which can be started with the command \inlineJava{java -jar}. During the packaging, only those components of an application server are packaged, which are referenced and needed by the application. The application can then be started via \inlineBash{java -jar app.jar}, whereby the application server is bootstrapped programmatically. The Uber-Jar is a repackaged Java Web-Archive, which could be hosted on any application server, which provides all of the referenced dependencies, which are added during the repackaging\cite{WildflySwarm2018}.  \\
+Thorntail.io, previously called Wildfly Swarm, is the Java Enterprise answer to Spring Boot, and is a framework based on Wildfly, which allows to package an application into an Uber-JAR. An Uber-JAR is a packaged standalone application, which can be started with the command \inlineJava{java -jar}. During the packaging, only those components of an application server are packaged, which are referenced and needed by the application. The application can then be started via \inlineBash{java -jar app.jar}, whereby the application server is bootstrapped programmatically. The Uber-Jar is a repackaged Java Web-Archive, which could be hosted on any application server, which provides all of the referenced dependencies, which are added during the repackaging\cite{WildflySwarm2018,Wildfly2017}.  \\
 
-During the implementation of the prototype, Wildfly Swarm has been renamed to Thorntail.io\footnote{https://thorntail.io/}, whereby the Maven Group-Id has been renamed from \mentionedtext{org.wildfly.swarm} to \mentionedtext{io.thorntail}. The used Maven Dependencies are still the same, and can be easily migrated by renaming the Maven Group-Id. The implemented sources are not affected at all.
+During the implementation of the prototype, Wildfly Swarm has been renamed to Thorntail.io\footnote{https://thorntail.io/}, whereby the Maven Group-Id has been renamed from \mentionedtext{org.wildfly.swarm} to \mentionedtext{io.thorntail}. The Maven Dependencies are still the same, but with a different Maven Group-Id.
 
 \subsection{Fabric8}
 \label{sec:esbi-technology-f8}
@@ -30,7 +30,7 @@ The following sections will discuss the implementations of the microservice aspe
 
 \section{Security}
 \label{sec:esbi-security}
-The services are secured with OAuth2, and authenticate their clients via Keycloak. Keycloak is used as the authentication service, and is a very popular open source identity and authentication application. Wildfly Swarm provides an integration into Keycloak via the Keycloak Adapter, which needs to be added as a dependency to the Maven \mentionedtext{pom.xml}. The adapter needs a configuration, to know what resources are secured.
+The services are secured with OAuth2, and authenticate their clients via Keycloak. Keycloak is used as the authentication service, and is a very popular open source identity and authentication application. Thorntail.io provides an integration into Keycloak via the Keycloak Adapter, which needs to be added as a dependency to the Maven \mentionedtext{pom.xml}. The adapter needs a configuration, to know what resources are secured.
 
 \subsection{Service}
 \label{sec:esbi-security-service}
@@ -42,7 +42,7 @@ This section will discuss the implementation of the security in the service impl
 	\label{ls:esboi-security-pom}
 \end{listing}
 
-Listing \vref{ls:esboi-security-yaml} shows an excerpt of the Wildfly Swarm configuration file \mentionedtext{project-stages.yml}, which configures the security constraints for the REST Endpoints.
+Listing \vref{ls:esboi-security-yaml} shows an excerpt of the Thorntail.io configuration file \mentionedtext{project-stages.yml}, which configures the security constraints for the REST Endpoints.
 
 \begin{listing}[h]
 	\yamlFile{\sourceDir/project-stages-security.yml}
@@ -138,7 +138,7 @@ This section will discuss the implementation of the service tracing. Listing \vr
 	\label{ls:esboi-tracing-pom}
 \end{listing}
 
-Listing \vref{ls:esboi-tracing-project-stages} shows the configuration  in the \mentionedtext{project-stages.yml}, for the integration into the Jaeger tracing service, whereby the configuration parameters are provided by Maven Properties, environment Variables and literals. The configuration properties are created as System Properties by Wildfly Swarm, whereby  expressions like \mentionedtext{\$\{env.JAEGER\_PORT\}} are resolved during startup.
+Listing \vref{ls:esboi-tracing-project-stages} shows the configuration  in the \mentionedtext{project-stages.yml}, for the integration into the Jaeger tracing service, whereby the configuration parameters are provided by Maven Properties, environment variables and literals. The System Property JAEGER\_ENDPOINT defines the HTTP Endpoint of the Jaeger tracing service, and is provided via an environment variable, which gets injected from an Openshift ConfigMap.
 
 \begin{listing}[h]
 	\yamlFile{\sourceDir/project-stages-opentracing.yml}
@@ -146,7 +146,7 @@ Listing \vref{ls:esboi-tracing-project-stages} shows the configuration  in the \
 	\label{ls:esboi-tracing-project-stages}
 \end{listing}
 
-Listing \vref{ls:esboi-tracing-java} shows a class which is annotated with \inlineJava{@Traced} on class level, which enables tracing for all methods within this class. The annotation \inlineJava{@Traced} enables an CDI Interceptor, which implements the tracing logic. \\
+Listing \vref{ls:esboi-tracing-java} shows a class which is annotated with \inlineJava{@Traced} on class level, which enables tracing for all methods within this class. The annotation \inlineJava{@Traced} enables a CDI Interceptor, which implements the tracing logic. \\
 
 A trace is a set of so called spans, whereby a span represents one call in a call chain and contains meta-data of the call, such as the call duration. The CDI Interceptor creates a new span for each method invocation, and appends the created span to an existing parent span, or the created span is the parent span. 
 
@@ -158,7 +158,7 @@ A trace is a set of so called spans, whereby a span represents one call in a cal
 
 \subsection{Openshift}
 \label{sec:esbi-tracing-openshift}
-The communication between the services and tracing service is done via UDP protocol, and therefore Openshift does need any special configuration. Openshift doesn't interfere with outgoing connections, only incoming.
+The communication between the services and tracing service is performed via HTTP, therefore Openshift does need any special configuration. Openshift doesn't interfere with outgoing connections, only incoming.
 
 \section{Logging}
 \label{sec:esbi-logging}
@@ -166,15 +166,23 @@ The services provide logging to a central log aggregation service. Graylog\footn
 
 \subsection{Service}
 \label{sec:esbi-logging-service}
-This section will discuss the implementation of the service logging. Listing \vref{ls:esboi-logging-pom} shows the dependencies, which bring in the logging implementations. SLF4J\footnote{https://www.slf4j.org/} has been chosen as the logging facade, whereby an integration into Wildfly Swarm used JBoss Logging is provided by SLF4J.
+This section will discuss the implementation of the service logging. Listing \vref{ls:esboi-logging-pom} shows the dependency, which brings in the Thorntail.io logging implementation, which needs to be configured, to send its logs to the log aggregation back-end.
 
 \begin{listing}[h]
 	\xmlFile{\sourceDir/maven-swarm-logging.xml}
-	\caption{ogging dependencies in pom.xml}
+	\caption{Logging dependencies in pom.xml}
 	\label{ls:esboi-logging-pom}
 \end{listing}
 
-The following listings are part of the \mentionedtext{project-stages.yml} configuration file and configure logging for different stages. Listing \vref{ls:esboi-logging-format-project-stages} shows the configuration of the logging format, which uses Mapped-Diagnostic-Context (MDC) parameters to mark a log entry with the transaction id. The configured formatter is used for all stages, because it has been defined globally.
+The provided logging implementation of Thorntail.io, does not provide a log handler for Graylog, therefore a custom JBoss Module had to be added, which adds the logstash-gelf\footnote{https://github.com/mp911de/logstash-gelf} library and its dependencies, which provide this feature. Thorntail.io allows to define custom JBoss Modules by adding a module.xml in the directory src/main/resources/modules/<module\_name\_path>/main/module.xml. Listing \vref{ls:esboi-logging-logstash} shows the custom JBoss Module, which integrates the logstash-gelf library. The defined artifacts are downloaded by Thorntail.io during the re-packaging phase of the Maven Build.
+
+\begin{listing}[h]
+	\xmlFile{\sourceDir/paluch-module.xml}
+	\caption{Custom module for logstash-gelf}
+	\label{ls:esboi-logging-logstash}
+\end{listing}
+
+The following listings are part of the \mentionedtext{project-stages.yml} configuration file and configure logging for different stages. Listing \vref{ls:esboi-logging-format-project-stages} shows the configuration of the logging format, which uses Mapped-Diagnostic-Context (MDC) parameters to mark a log entry with the transaction id. The configured formatter is defined globally, therefore it will used for all stages.
 
 \begin{listing}[h]
 	\yamlFile{\sourceDir/project-stages-logging-format.yml}
@@ -183,6 +191,7 @@ The following listings are part of the \mentionedtext{project-stages.yml} config
 \end{listing}
 
 Listing \vref{ls:esboi-logging-dev-project-stages} shows the logging configuration for the development stage.
+\newpage
 
 \begin{listing}[h]
 	\yamlFile{\sourceDir/project-stages-logging-dev.yml}
@@ -190,16 +199,16 @@ Listing \vref{ls:esboi-logging-dev-project-stages} shows the logging configurati
 	\label{ls:esboi-logging-dev-project-stages}
 \end{listing}
 
-Listing \vref{ls:esboi-logging-prod-project-stages} shows the configuration in the \mentionedtext{project-stages.yml} for the logging of the production stage, whereby logs are send to a central log aggregation service. A Syslog Log-Handler is configured, which sends the logs to the log aggregation service via the Syslog\footnote{https://tools.ietf.org/html/rfc5424} protocol. The configuration, where to send the logs, is provided via System Properties, which are created during startup out of environment variables, which are set with values of an Openshift Secret. \\
-
-Listing \vref{ls:esboi-logging-java-transaction-id} shows the implementation of the interface \mentionedtext{ContainerRequestFilter}, provided by the JAX-RS specification, which is used to capture the current trace transaction id on the REST Endpoints. The implementation is depending on the Uber MicroProfile-OpenTracing implementation, because the specification itself doesn't provide an accessor for the transaction id yet. The captured transaction id is set into MDC, whereby the formatter, defined in Listing \vref{ls:esboi-logging-format-project-stages}, references the MDC parameter.
-\newpage
+Listing \vref{ls:esboi-logging-prod-project-stages} shows the configuration in the \mentionedtext{project-stages.yml} for the logging of the production stage, whereby logs are send to a central log aggregation service. A log handler of the logstash-gelf library is configured, which sends the logs to the log aggregation service via HTTP.
 
 \begin{listing}[h]
 	\yamlFile{\sourceDir/project-stages-logging-prod.yml}
 	\caption{Configuration of the logging for production stage}
 	\label{ls:esboi-logging-prod-project-stages}
 \end{listing}
+
+Listing \vref{ls:esboi-logging-java-transaction-id} shows the implementation of the interface \mentionedtext{ContainerRequestFilter}, provided by the JAX-RS specification, which is used to capture the current trace transaction id on the REST Endpoints. The implementation is depending on the Uber MicroProfile-OpenTracing implementation, because the specification itself doesn't provide an accessor for the transaction id yet. The captured transaction id is set into MDC, whereby the formatter, defined in Listing \vref{ls:esboi-logging-format-project-stages}, references the MDC parameter.
+\newpage
 
 \begin{listing}[h]
 	\javaFile{\sourceDir/java-logging-tracing-id.java}
@@ -208,7 +217,6 @@ Listing \vref{ls:esboi-logging-java-transaction-id} shows the implementation of 
 \end{listing} 
 
 Listing \vref{ls:esboi-logging-java-producer} shows the CDI Producer method, which provides the logger instances for injection points. The logger is produced for the Dependent Scope, which means, that the life-cycle of the logger instance is managed by the CDI Bean, which gets the logger injected.
-\newpage
 
 \begin{listing}[h]
 	\javaFile{\sourceDir/java-logging-producer.java}
@@ -226,11 +234,11 @@ Listing \vref{ls:esboi-logging-java} shows a class using an injected logger to l
 
 \subsection{Openshift}
 \label{sec:esbi-logging-openshift}
-The services send their logs to a central log aggregation service via the UDP protocol, and therefore no special settings for Openshift necessary. Nevertheless, logs send to the console are collected by Openshift and can be analyzed in the Openshift Web-Console.
+The services send their logs to a central log aggregation service via HTTP, and therefore no special settings for Openshift necessary. Nevertheless, logs send to the console are collected by Openshift and can be analyzed in the Openshift Web-Console as well.
 
 \section{Fault Tolerance}
 \label{sec:esbi-fault}
-The services use the MicroProfile-FaultTolerance specification to define fault tolerance behavior on methods. Hystrix\footnote{https://github.com/Netflix/Hystrix/wiki/How-it-Works} is a popular framework for failure handling in applications, was the inspiration for the MicroProfile-FaultTolerance specification, and is used as the back-end for the Wildfly Swarm provided dependency.
+The services use the MicroProfile-FaultTolerance specification to define fault tolerance behavior on methods. Hystrix\footnote{https://github.com/Netflix/Hystrix/wiki/How-it-Works} is a popular framework for failure handling in applications, was the inspiration for the MicroProfile-FaultTolerance specification, and is used as the back-end for the Thorntail.io provided dependency.
 
 \subsection{Service}
 \label{sec:esbi-fault-service}
@@ -279,12 +287,13 @@ This section will discuss the management and implementation of the service REST 
 Listing \vref{ls:esboi-api-swagger-conf} shows the \mentionedtext{swarm.swagger.conf} configuration file, which configures Swagger for the documented service. During startup, Swagger will scan the configured packages for interfaces and classes, which provide documentation in form of Swagger Annotations. The scanned documentations are written to a file named \mentionedtext{swagger.json}, which contains the Swagger Documentation of the service REST API.    
 
 \begin{listing}[h]
-	\yamlFile{\sourceDir/swarm.swagger.conf}
-	\caption{Swagger configuration in swarm.swagger.conf}
+	\yamlFile{\sourceDir/project-stages-swagger.yml}
+	\caption{Swagger configuration in project-stages.yml}
 	\label{ls:esboi-api-swagger-conf}
 \end{listing}
 
 Listing \vref{ls:esboi-api-swagger-java} shows an interface, which specifies a REST Endpoint via JAX-RS Annotations, and provides documentation via Swagger Annotations. Additionally, Java BeanValidation-Annotations are used to define constraints for the input arguments of the REST Operations, so that validation is applied on all incoming requests. The JAX-RS, Java BeanValidation and Swagger Annotations are scanned and applied to the generated Swagger Documentation.
+\newpage
 
 \begin{listing}[h]
 	\javaFile{\sourceDir/java-swagger.java}
@@ -294,10 +303,9 @@ Listing \vref{ls:esboi-api-swagger-java} shows an interface, which specifies a R
 
 \subsection{Client}
 \label{sec:esbi-api-client}
-This section will discuss the implementation of the REST Client, which is generated by the swagger Maven-Plugin by using the service provided \mentionedtext{swagger.json} file. The following listings show the configuration of the Maven Plugins, which are used to generate a REST Client from a Swagger Documentation during a Maven Build.
-\\ \\
+This section will discuss the implementation of the REST Client, which is generated by the swagger Maven-Plugin by using the service provided \mentionedtext{swagger.json} file. The following listings show the configuration of the Maven Plugins, which are used to generate a REST Client from a Swagger Documentation during a Maven Build. \\
+
 Listing \vref{ls:esboi-api-client-add-sources-pom} shows the configuration of the Maven Helper-Plugin in the consumer service \mentionedtext{pom.xml}, which is used to add the generated REST Client sources for the compilation. The source directory points to the directory, where the generated REST Client sources are located.
-\newpage 
 
 \begin{listing}[h]
 	\xmlFile{\sourceDir/maven-swagger-client-add-sources.xml}
@@ -314,7 +322,6 @@ Listing \vref{ls:esboi-api-client-clean-pom} shows the configuration of the Mave
 \end{listing}
 
 Listing \vref{ls:esboi-api-client-swagger-plugin-pom} shows the Swagger Maven-Plugin configuration in the consumer service \mentionedtext{pom.xml}, which is used to generate the REST Client during the Maven Build. Custom Swagger Code-Generator templates are used, due to the fact that, there is no Swagger Code-Generator, which only generates plain JAX-RS interfaces and models. 
-\newpage
 
 \begin{listing}[h]
 	\xmlFile{\sourceDir/maven-swagger-client-swagger-plugin.xml}
@@ -346,9 +353,7 @@ The REST API-Management and migration doesn't affect Openshift, because the serv
 
 \section{Openshift Project}
 \label{sec:esbi-openshift}
-This section will discuss the implementation of the Openshift Project, which represents the ESB. The implementations are represented by scripts, configurations and secrets, which ensure that the Openshift Project is properly setup, and provides all resources needed by the services, such as Openshift ConfigMaps and Openshift Secrets. The Openshift resources, which are consumed by the services, are managed by one script per service. 
-\\ \\
-The scripts, configurations and secrets are managed by operators, which ensure that the Openshift Projects are properly setup, and provide all Openshift resources for the services, for a specific stage, an Openshift Project represents.
+This section will discuss the implementation of the Openshift Project, which represents the ESB. The implementations are represented by scripts, configurations and secrets, which ensure that the Openshift Project is properly setup, and provides all resources needed by the services, such as Openshift ConfigMaps and Openshift Secrets. The Openshift resources, which are consumed by the services, are managed by one script per service. The scripts, configurations and secrets are managed by operators, which ensure that the Openshift Projects are properly setup, and provide all Openshift resources for the services, for a specific stage, an Openshift Project represents.
 
 \subsection{Scripts}
 \label{sec:esbi-openshift-secrets}
@@ -362,7 +367,7 @@ This section will discuss the implemented scripts for managing the Openshift res
 
 The scripts are a convenient way for managing Openshift Secrets, and are more flexible then template based Openshift Secret-Management. With Openshift Templates, there would also be the need for scripts, which can create/modify/delete via Openshift Templates created resources. The scripts are separated from the actual secrets or configurations, and can therefore be used for all stages, whereby each stage provides their own secrets and configurations. \\
 
-Listing \vref{ls:esboi-openshift-oc-template} shows the CLI functions, for managing the database application, which is used by the prototype, to simulate the external integrated database. The template encapsulates and defines all resources needed by this application, which are created during the instantiation process. This is a main feature of Openshift Templates, which allows to bundle all definitions into one template file.
+Listing \vref{ls:esboi-openshift-oc-template} shows the CLI functions, for managing the database application, which simulates the external integrated database. The template encapsulates and defines all resources needed by this application, which are created during the instantiation process. This is a main feature of Openshift Templates, which allows to bundle all definitions into one template file.
  
 \begin{listing}[h]
 	\bashFile{\sourceDir/bash-oc-template.sh}
@@ -372,7 +377,7 @@ Listing \vref{ls:esboi-openshift-oc-template} shows the CLI functions, for manag
 
 \subsection{Templates}
 \label{sec:esbi-openshift-config}
-There is no need for additional Openshift Templates for the services, because Fuse Integration Services 2.0 and the Fabric8 Maven-Plugin provide all necessary resources and functionality to manage the services via their own code bases. The service code bases manage Openshift Templates, such as the \mentionedtext{deployment.yml}, which defines the environment for a service, by specifying
+There is no need for additional Openshift Templates for the services, because Fuse Integration Services 2.0 and the Fabric8 Maven-Plugin provide all necessary tooling to manage the services via their own code bases. The Fabric8 Maven-Plugin enriches the services Openshift resources with labels, and accesses the resources only by the service labels. The service code bases manage Openshift Templates, such as the \mentionedtext{deployment.yml}, which defines the environment for a service, by specifying
 \begin{itemize}
 	\item the injection of configurations and secrets,
 	\item the health checks,
@@ -380,9 +385,7 @@ There is no need for additional Openshift Templates for the services, because Fu
 	\item the roll-out behavior,
 	\item and the accessible ports.
 \end{itemize}
-
-The Fabric8 Maven-Plugin manages only the service resources of an Maven Project, by applying proper labels and accessing the resources by its labels.
-\\ \\
+\ \\
 The following Chapter \vref{cha:esbd} will evaluate and analyze the implemented prototype, if the prototype fulfills the specification of Chapter \vref{cha:esboc}, and if the prototype is a valid representation for an ESB in Openshift.
 
 
