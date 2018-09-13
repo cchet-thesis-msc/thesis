@@ -7,7 +7,7 @@ swarm:
     file-handlers:
     custom-handlers:
       GELF-HTTP:
-        named-formatter: DEFAULT_LOG_PATTERN
+        named-formatter: "DEFAULT_LOG_PATTERN"
         attribute-class: "biz.paluch.logging.gelf.wildfly.WildFlyGelfLogHandler"
         module: "biz.paluch.logging"
         properties:
