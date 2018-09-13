@@ -176,7 +176,7 @@ This section will discuss the implementation of the service logging. Listing \vr
 	\label{ls:esboi-logging-pom}
 \end{listing}
 
-The provided logging implementation of Thorntail.io does not support the used Graylog service, therefore the library logstash-gelf was added, which supports Graylog and provides an Wildfly compatible log handler, which can be used with Thorntail.io. The library was added via a custom JBoss Module, because it is only needed during runtime. The module.xml for the JBoss module for logstash-gelf was defined at src/main/resources/modules/<module\_name>/main/module.xml. Listing \vref{ls:esboi-logging-logstash} shows the custom JBoss Module \mentionedtext{module.xml}, which integrates the logstash-gelf library. The defined artifacts are downloaded by Thorntail.io during the re-packaging phase of the Maven Build\cite{LogstashGelf2018}.
+The provided logging implementation of Thorntail.io does not support the used Graylog service, therefore the library logstash-gelf was added, which supports Graylog and provides a Wildfly compatible log handler, which can be used with Thorntail.io. The library is integrated via a custom JBoss Module, because it is only needed during runtime. The module.xml for the JBoss Module for logstash-gelf was defined at src/main/resources/modules/<module\_name>/main/module.xml. Listing \vref{ls:esboi-logging-logstash} shows the custom JBoss Module \mentionedtext{module.xml}, which integrates the logstash-gelf library. The defined artifacts are downloaded by Thorntail.io during the re-packaging phase of the Maven Build\cite{LogstashGelf2018}.
 \newpage
 
 \begin{listing}[h]
@@ -365,7 +365,7 @@ The Openshift related resources of a service, such as the scripts, configuration
 	\item \textbf{/<service\_name>/config/<stage>} is the directory holding the service configuration for a specific stage.
 \end{itemize}
 
-The stage is defined via the environment variable \mentionedtext{STAGE}, which acts as the selector for the configurations to use, as shown in Listing \vref{ls:esboi-openshift-oc-service}.
+The stage is defined via the environment variable \mentionedtext{STAGE}, which acts as the selector for the configurations to use as shown in Listing \vref{ls:esboi-openshift-oc-service}.
 
 \subsection{Scripts}
 \label{sec:esbi-openshift-secrets}

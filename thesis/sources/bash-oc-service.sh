@@ -9,7 +9,7 @@ function createSecrets() {
 function deleteSecrets() {
   oc delete secret/${SECRET_SERVIVE}
   oc delete secret/${SECRET_SERVIVE_KEYCLOAK}
-} # createSecrets
+} # deleteSecrets
 
 function scaleUp() {
   oc scale --replicas=1 dc/${SERVICE_NAME}
